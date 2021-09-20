@@ -6,6 +6,7 @@ author:
    - Aditi Singh
    - Jainil Dharmil Shah
    - Revendranath T
+   - VAIBHAV
 date: "9/20/2021"
 output: pdf_document
 ---
