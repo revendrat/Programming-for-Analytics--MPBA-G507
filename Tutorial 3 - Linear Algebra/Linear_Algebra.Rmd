@@ -1,0 +1,350 @@
+---
+title: "Linear Algebra for Programming"
+author: "Programming for Analytics"
+date: "9/30/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Linear Algebra
+
+Linear algebra is the branch of mathematics that deals with matrices, vectors and vector spaces, and systems of linear equations.
+
+**NOTE:**
+
+    1) Each variable in each code chunk is being used in latter code chunks. That is, the code has been written such that each variable is a global variable. (Google global variables if you are confused!)
+
+    2) Try running each code chunk by yourself and observe the code chunk variables in the global environment of R. Or make an R Script of your own and type the code out (Best Practice!).
+    
+    
+### Vectors
+
+Vectors are defined as an ordered collection of numbers. We use the concatenate function `c()` to create  a vector with a certain amount of elements or use the `assign()` function.
+
+```{r}
+
+my_vector <- c(1, 2, 3, 4)
+
+assign('my_vector', c(1, 2, 3, 4))
+
+```
+
+The `<-` can be interchanged with the `=` operator. 
+
+There are various ways one can generate sequences of numbers in a vector. We can use the `seq()` function and also the `:` operator. The `rep()` function can be used to replicate vectors.
+
+```{r}
+
+# The below line prints a vector with numbers between and including 1 and 10.
+colon = c(1:10)
+
+# Returns the same output as above.
+sequence = seq(1,10)
+
+# Increments can be given as part of the 'by' attribute in the sequence function.
+sequence_2 = seq(1,20, by = 2.0)
+
+# The times attribute is used to specify the number of times the vector must be replicated.
+repetition = rep(colon, times = 5)
+
+
+```
+
+**TO-DO** 
+
+Figure out what the lines in the below code chunk would give as the output. (Or you could just run it, but that would be cheating!)
+
+```{r}
+
+my_vector_test <- c(my_vector, 0 , my_vector)
+
+#Hint for the below problem: Operator Precedence.
+colon_test <- c(2*1:5)
+
+```
+
+##### Vector Operations
+
+The arithmetic operators `+`, `-`, `*`, `/`, and `^` can all be used for vector operations. `log`, `exp`, `sin`, `cos`, `tan`, `sqrt`, and more can also be used. 
+
+`max` and `min` functions return the largest and smallest elements of a vector, and `length` function returns the number of elements in the vector.The `sum` gives the total of the elements in the vector, and `prod` their product.
+
+**TO-DO** 
+
+    1) Try using the above operators and functions and test it out on the `my_vector` variable. Also, try using the arithmetic operators between i) `my_vector` and itself, ii) `my_vector` and `my_vector_test`. (How are the arithmetic operators working on vectors of different length!)
+    
+    2) Use the R Documentation and find out uses for `mean()`, `var()` functions. Apply them to the vectors we have declared above. 
+    
+    
+### Matrices and Arrays
+
+Matrices are a very natural approach of organizing the data.(**2-dimensional array**) Usually matrices are used to store and represent the data on machines.
+
+In general, data is organized in the following fashion:
+        
+        1) Rows represent the samples.
+        2) Columns represent the values of the variables(attributes).
+        
+In the below code chunk, we try to find out a way to initialize a matrix. 
+        
+```{r}
+
+#Figure out what the attributes 4, 6 are in the matrix() function        
+matrix_1 <- matrix(c(1:24), 4, 6)
+
+print(matrix_1)
+
+#We have seen something similar to the output of the lines below when we were initializing vectors.
+matrix_2 = matrix(c(2, 4, 6), 3, 3)
+
+print(matrix_2)
+```
+        
+An array is a subscripted collection of data entries, not necessarily numeric. Arrays are the R data objects which can store data in more than two dimensions.
+
+For example − If we create an array of dimension `(3, 3, 5)` then it creates 5 rectangular matrices each with 3 rows and 3 columns. Arrays can store only one data type.
+
+An array is created using the `array()` function. It takes vectors as input and uses the values in the `dim` attribute to create an array. 
+
+Let us try and run the code chunk below! Try to deduce the output of the code chunk before running the code chunk.
+
+
+```{r}
+
+# Create two vectors of different lengths.
+vector_even <- c(2, 4, 6)
+vector_odd <- c(1, 3, 5, 7, 9, 11)
+
+# Giving names to the column, rows and matrices. (Basically naming each dimension!)
+column.names <- c("COL1","COL2","COL3")
+row.names <- c("ROW1","ROW2","ROW3")
+matrix.names <- c("Matrix 1","Matrix 2")
+
+# Take these vectors as input to the array.
+array_final <- array(c(vector_even,vector_odd),dim = c(3,3,2),dimnames = list(row.names,column.names,
+   matrix.names))
+
+print(array_final)
+
+
+```
+
+##### Accessing and Manipulating Array Elements
+
+In this topic, we shall directly move to the *TO-DOs* as the title clearly suggests what we shall be doing.
+
+**TO-DO:**
+
+    1) Run both the given code chunks and try to deduce what the outputs are. Some help has been provided in the comments.
+    
+    2) Try to obtain the entire 1st matrix in the array `array_final` with all the rows but only the first 2 columns. (Hint: `:` might be of some use)
+
+
+```{r}
+
+# Prints the third row of the second matrix of the array.
+print(array_final[3,,2])
+
+# Prints the element in the 1st row and 3rd column of the 1st matrix.
+print(array_final[1,3,1])
+
+# Prints the 2nd Matrix.
+print(array_final[,,2])
+
+
+```
+
+    3) Work on completely randomizing the vectors given below in the code chunk without substituting values by yourself. (Hint: We have done this before!)
+
+```{r}
+
+# Create two vectors of different lengths.
+vector_random_1 <- c(9,1,0)
+vector_random_2 <- c(6,0,11,3,14,1,2,6,9)
+
+#Create an array from these vectors.
+array_random <- array(c(vector_random_1,vector_random_2),dim = c(3,3,2))
+
+# create matrices from array_final and array_random.
+matrix_random_1 <- array_random[,,2]
+matrix_random_2 <- array_final[,,2]
+
+# Add the matrices.
+result_add <- matrix_random_1 + matrix_random_2
+print(result_add)
+
+```
+
+##### Matrix Multiplication and Element-wise Multiplication of Matrices
+
+Element wise product of the two matrices A and B is given by `A*B`. Matrix multiplication between two matrices A and B is given by `A%*%B`.
+
+**TO-DO**
+
+    1) Find the elementwise product of two matrices, and also perform matrix multiplication between the two matrices. Also, the 2 matrices must *not* be square matrices.
+    
+    2) Randomize the matrices. (*NOTE*: The matrix multiplication rules must be taken into account before initializing the matrices)
+    
+The code chunk given below will provide some help for the above tasks.
+
+```{r}
+
+# Initializing matrices.
+matrix_3 = matrix(c(1:9), 3, 3)
+
+matrix_4 = matrix(c(2*1:9), 3, 3)
+
+# Element-wise multiplication of the 2 matrices.
+matrix_3 * matrix_4
+
+# Matrix multiplication of the 2 matrices.
+matrix_3 %*% matrix_4
+
+```
+
+##### Inverse of and Transpose of a Matrix 
+
+The purpose of the inverse of the matrix is to help aid simultaneous solving of multiple algebraic linear equations. 
+
+The transpose of a matrix is obtained by changing its rows into columns and its columns into rows. 
+
+We use the `solve()` function for evaluating the inverse of a matrix and the `t()` function for evaluating the transpose of the matrix.
+
+**MINI-TASK:** Check if one can find out the inverse of a non-square matrix and if you can try to print out the inverse for the matrix `non_square` in the code chunk given below. (The library `MASS` may be of some use!)
+
+```{r}
+
+random_matrix = matrix(c(sample(1:9)), 3, 3)
+
+inverse_matrix = solve(random_matrix)
+
+transpose_matrix = t(random_matrix)
+
+#Initializing mini-task matrix.
+
+non_square = matrix(c(sample(1:6)), 2, 3)
+
+```
+
+##### Rank of a Matrix
+
+
+Rank of a matrix refers to the number of linearly independent rows or columns of the matrix. (Linearly Independent and The rank of the matrix can be found using the `rank()` function.
+
+
+**TO-DO**
+
+Deduce the output of the below code chunk before running it yourself and then try to find the rank of the matrix. (Try to find out what the `byrow` attribute is responsible for!)
+
+```{r}
+
+matrix_1 = matrix(c(1,2,3,2,4,6,1,0,0),ncol=3,byrow=FALSE)
+
+```
+
+### Eigen Values and Eigenvectors
+
+Eigenvalues of a matrix can be identified using the equation |A - λI| = 0 where I refers to the identity matrix of the same order as that of A.
+
+The function `eigen()` calculates the eigenvectors and eigenvalues of a symmetric matrix. The result of this function is a list of two components named `values` and `vectors`.
+
+**MINI-TASK:** Find out the use for the `$` operator in the code chunk given below.
+
+```{r}
+A = matrix(c(8,7,2,3),2,2,byrow=TRUE)
+
+eigen_list = eigen(A)
+
+eigenvalues = eigen_list$values
+eigenvectors = eigen_list$vectors
+
+print(eigenvalues)
+print(eigenvectors)
+```
+
+### Singular value decomposition (SVD)
+
+Singular Value Decomposition is a technique used in Machine Learning and is used to make sense out of data that is noisy. It represents a dataset by eliminating the less important parts and generating an accurate approximation of the original dataset.
+
+SVD will take a matrix as an input and decompose it into a product of three simpler matrices. The below image depicts the clear decomposition of a matrix into 3 separate matrices. SVD finds a lot of use in the world of **Natural Language Processing**.
+
+![](./images/SVD.png)
+
+The function `svd()` takes an arbitrary matrix argument and calculates the singular value decomposition of the matrix.
+
+**TO-DO** 
+
+    1) Try to obtain each matrix of the `svd_results` variable by using the `$` operator.
+    
+    2) Check the purpose of the `nu` and `nv` attributes of the `svd()` function via the R documentation.
+    
+    3) Try to print out each matrix that was obtained after decomposition using the `$` operator.
+    
+    4) OPTIONAL: A challenge would be to use the matrices that we have obtained via decomposition to verify whether SVD was accurate or not.
+
+```{r}
+
+matrix_svd = matrix(c(sample(1:100)), 10, 10)
+
+svd_results = svd(matrix_svd, nu =5, nv = 5)
+
+svd_results
+
+
+```
+
+
+### Solving linear equations simultaneously
+
+In order to solve a set of linear equations, we require concepts such as the inverse of a matrix. Let us consider the following set of equations.
+
+$$
+a_{11}x_1 + a_{12}x_2 + a_{13}x_3 = b_1
+$$
+$$
+a_{21}x_1 + a_{22}x_2 + a_{23}x_3 = b_2
+$$
+$$
+a_{31}x_1 + a_{32}x_2 + a_{33}x_3 = b_3
+$$
+The values *a* and *b* are constants. The values *x* are variables. These values can be represented in the form of matrices where the constants *a* are a part of the matrix A and the constants on the RHS *b* are a part of the matrix B. 
+
+We can evaluate the variables in the solution via the following equations:
+
+$$
+
+AX = B
+
+$$
+$$
+
+X = A^{-1}B
+
+$$
+**MINI-TASK**
+
+Obtain the solution for 5 randomly generated linear equations using the same method.
+
+
+```{r}
+
+A_1 = c(2, 3, 5)
+A_2 = c(5, 8, 3)
+A_3 = c(4, 5, 1)
+
+A = rbind(A_1, A_2, A_3)
+
+B = matrix(c(15, 20, 21))
+
+inverse_A = solve(A)
+
+X = inverse_A %*% B
+
+print(X)
+
+```
+
+
