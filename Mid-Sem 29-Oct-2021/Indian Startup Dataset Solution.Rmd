@@ -1,0 +1,247 @@
+---
+title: "Mid-Sem Solutions"
+author: "PfA Teaching Team"
+date: "10/28/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# packages required
+library(readxl)
+library(tidyverse)
+#library(janitor)
+# Doing this without using janitor package
+
+# remove scientific notation
+options(scipen=999)
+```
+
+
+## Q.No. 1
+## Read the excel file "Indian Startup Dataset.xlsx" into a startup_funding variable as dataframe
+* Read the dataset to R environment
+```{r}
+startup_funding <- read_excel("G:/My Drive/Deep Learning Workshop/Indian Startup Dataset.xlsx",
+skip = 2) 
+#startup_funding
+head(startup_funding)
+```
+## Q.No. 2
+## Clean the column names to small cases, remove special characters, replace space with underscore
+
+```{r}
+colnames(startup_funding)
+```
+
+```{r}
+startup_funding <- startup_funding %>% rename( sr_no = `Sr. No.`,
+                            date = `Date (dd/mm/yyyy)`,
+                            startup_name = `Startup Name`,
+                            industry_vertical = `Industry / Vertical`,
+                            sub_vertical = `Sub-Vertical`,
+                            city_location = `City / Location`,
+                            investors_name = `Investors' Name`,
+                            investment_type = `Investment Type`,
+                            amount_usd = `Amount (In USD)`
+                            )
+
+colnames(startup_funding)
+```
+## Q.No. 3
+## Create a column containing unique value per row 
+```{r}
+dim(startup_funding)
+```
+```{r}
+#nrow() provides number if dimensions
+startup_funding$row_id <- seq(1, nrow(startup_funding),1)
+
+#rows with missing have a common pattern with date
+startup_funding <- startup_funding %>% 
+  filter(date != "00/01/1900") %>% 
+  select(row_id, everything())
+
+startup_funding
+```
+
+```{r}
+startup_funding <- startup_funding %>% 
+  mutate(amount_cleaned = str_replace_all(amount_usd, ",", ""))
+```
+
+
+```{r}
+startup_funding <- startup_funding %>% 
+  mutate(amount_cleaned = ifelse(amount_cleaned %in% c("N/A", "NA" , "Undisclosed" , "undisclosed" , "unknown" , "upto 15000000"), "undisclosed", as.numeric(amount_cleaned))
+         ) 
+
+head(startup_funding)
+
+
+```
+
+```{r}
+startup_funding_undisclosed <-  startup_funding %>% filter(amount_cleaned == "undisclosed") 
+
+startup_funding_undisclosed
+```
+
+```{r}
+startup_funding <-  startup_funding %>% filter(amount_cleaned != "undisclosed") %>% 
+  mutate(amount_cleaned = as.numeric(amount_cleaned),
+         amount_cleaned_inr = amount_cleaned*75
+         )
+```
+
+## Q.No. 5
+## "Create separate columns
+* (a) day
+* (b) month
+* (c ) year
+* Extract day, month and year from date column, and populate the same in (a), (b), and (c )
+
+
+```{r}
+startup_funding %>% 
+  mutate(date_new = lubridate::dmy(date),
+         day      = lubridate::day(date_new),
+         month    = lubridate::month(date_new),
+         year     = lubridate::year(date_new)
+         )  %>% 
+  select(date,  date_new, day, month, year)
+
+#or
+
+startup_funding <- startup_funding %>% 
+  mutate(date_new = lubridate::dmy(date),
+         day      = as.numeric(str_sub(date_new,9,10)),
+         month    = as.numeric(str_sub(date_new,6,7)),
+         year     = as.numeric(str_sub(date_new,1,4))
+         ) 
+
+```
+
+## Q.No. 6
+## Identify the top 10 highest:
+* (1) funded startups
+* (2) Industry Verticals
+* (3) Industry Verticals & sub-verticals
+* (4) Location
+* (5) type of investment
+
+```{r}
+startup_funding %>% head()
+```
+
+
+```{r}
+#by startup_name
+startup_funding %>% group_by(startup_name) %>% 
+  summarise(total_funding_inr = sum(amount_cleaned_inr)) %>% 
+  arrange(desc(total_funding_inr)) %>% 
+  select(startup_name, total_funding_inr) %>% head(10)
+
+#by industry_vertical
+startup_funding %>% group_by(industry_vertical) %>% 
+  summarise(total_funding_inr = sum(amount_cleaned_inr)) %>% 
+  arrange(desc(total_funding_inr)) %>% 
+  select(industry_vertical, total_funding_inr) %>% head(10)
+
+
+#by industry_vertical & sub_vertical
+startup_funding %>% group_by(industry_vertical, sub_vertical) %>% 
+  summarise(total_funding_inr = sum(amount_cleaned_inr)) %>% 
+  arrange(desc(total_funding_inr)) %>% 
+  select(industry_vertical,  sub_vertical, total_funding_inr) %>% head(10)
+
+#by location
+startup_funding %>% group_by(city_location) %>% 
+  summarise(total_funding_inr = sum(amount_cleaned_inr)) %>% 
+  arrange(desc(total_funding_inr)) %>% 
+  select(city_location, total_funding_inr) %>% head(10)
+
+# by type of investment
+startup_funding %>% group_by(investment_type) %>% 
+  summarise(total_funding_inr = sum(amount_cleaned_inr)) %>% 
+  arrange(desc(total_funding_inr)) %>% 
+  select(investment_type, total_funding_inr) %>% head(10)
+
+
+```
+
+
+## Q.No. 7
+## Provide the summary statistics of funded startups by industry vertical, sub-vertical, type of investment and location
+
+
+```{r}
+#industry_vertical, sub_vertical, city_location, investment_type
+startup_funding %>% 
+  group_by(industry_vertical, sub_vertical, city_location, investment_type ) %>% 
+  summarise( count_all  = n(),
+            sum_al = sum(amount_cleaned_inr),
+            mean_al = mean(amount_cleaned_inr),
+            median_al = median(amount_cleaned_inr),
+            sd_al     =  sd(amount_cleaned_inr)
+            ) %>% 
+  arrange(desc(count_all))
+
+
+```
+
+
+## Q.No. 8
+## Explore the following for the startups with undisclosed amount funded: 
+ * (a) Identify which of them were funded with disclosed amount previously and after
+ * (b) Identify which of them were not funded 
+ 
+```{r}
+startup_funding_undisclosed
+```
+
+```{r}
+startup_funding
+```
+
+```{r}
+startup_funding_undisclosed %>% inner_join(startup_funding, by = "startup_name")
+
+# Not funded previously or after
+startup_funding_undisclosed %>% anti_join(startup_funding, by = "startup_name")
+
+
+
+
+```
+
+## Q.No. 9
+## By year, identify the investment type, and amount per startup. Display the results in descending order of year.
+
+```{r}
+startup_funding %>% group_by(startup_name, year, investment_type ) %>% 
+  summarise(total_funding_inr = sum(amount_cleaned_inr)) %>% 
+  arrange(startup_name, desc(year)) %>% 
+  select(startup_name, year, investment_type, total_funding_inr)
+```
+
+## Q.No. 10
+## Find the startups funded with 
+* (a) more than 50 million USD, or 400 Crores INR 
+* (b) that are not Fintech, Saas, Transportation, Finance, and E-Commerce
+* (c) provide total funding of these startups
+
+
+```{r}
+startup_funding %>% 
+  filter(!industry_vertical %in% c("Fintech", "Saas", "Finance", "Transportation", "E-Commerce")) %>% 
+  group_by(startup_name) %>% 
+  summarise( total_funding_usd = sum(amount_cleaned),
+    total_funding_inr = sum(amount_cleaned_inr)) %>% 
+  filter(total_funding_usd > 50000000, total_funding_inr > 4000000000) %>% 
+  select(startup_name, total_funding_usd, total_funding_inr)
+```
+
