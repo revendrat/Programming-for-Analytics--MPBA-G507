@@ -1,0 +1,186 @@
+---
+title: "Categorical Operations - II"
+author: "Revendranath T"
+date: "8/6/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(RCurl)
+# x <- getURL("https://raw.githubusercontent.com/Defcon27/Data-Analysis-of-Indian-Automobile-dataset-using-Machine-Learning-in-R/master/indian-auto-mpg.csv"
+#             )
+# 
+# impg <- read.csv(text = x)
+
+#library(janitor)
+impg <- read.csv("https://raw.githubusercontent.com/Defcon27/Data-Analysis-of-Indian-Automobile-dataset-using-Machine-Learning-in-R/master/indian-auto-mpg.csv") %>% clean_names()
+
+impg %>% glimpse()
+
+impg %>% select(name) %>%  unique() %>% get_dupes()
+
+impg %>% select(manufacturer) %>%  unique() %>% get_dupes()
+
+impg %>% select(transmission)  %>%  unique() %>% get_dupes()
+
+impg %>% select(fuel_type)  %>%  unique() %>% get_dupes()
+
+impg %>% select(owner_type)  %>%  unique() %>% get_dupes()
+
+impg %>% select(engine_cc)  %>%  unique() %>% get_dupes()
+
+impg %>% select(power)  %>%  unique() %>% get_dupes()
+
+impg %>% select(seats)  %>%  unique() %>% get_dupes()
+
+impg %>% select(mileage_km_l)  %>%  unique() %>% get_dupes()
+```
+
+
+```{r}
+library(forcats)
+impg %>% glimpse()
+
+#convert to factors
+impg$name <- as.factor(tolower(impg$name))
+impg$manufacturer <- as.factor(tolower(impg$manufacturer))
+impg$fuel_type <- as.factor(tolower(impg$fuel_type))
+impg$transmission <- as.factor(tolower(impg$transmission))
+impg$owner_type <- as.factor(tolower(impg$owner_type))
+impg$location <- as.factor(tolower(impg$location))          
+
+impg %>% glimpse()
+
+levels(impg$manufacturer)
+levels(impg$fuel_type) 
+levels(impg$transmission) 
+levels(impg$owner_type) 
+levels(impg$location) 
+
+
+
+
+#Remove duplicates to get unique values
+fct_unique(impg$name)
+fct_unique(impg$manufacturer) 
+fct_unique(impg$fuel_type) 
+fct_unique(impg$transmission) 
+fct_unique(impg$owner_type) 
+fct_unique(impg$location) 
+
+
+```
+
+## Evaluate which cars are highest
+```{r}
+#Count the number of values: fct_count from forecats package
+fct_count(impg$name, sort = TRUE) 
+fct_count(impg$name) 
+fct_count(impg$manufacturer, sort = TRUE) 
+fct_count(impg$manufacturer)
+fct_count(impg$fuel_type, sort = TRUE) 
+fct_count(impg$transmission, sort = TRUE) 
+fct_count(impg$owner_type, sort = TRUE) 
+```
+```{r}
+fct_count(impg$manufacturer, sort = TRUE) %>% 
+  filter(f == "tata")
+```
+
+
+```{r}
+dzire <- impg %>% filter(manufacturer == "maruti") %>% 
+  filter(str_detect(name, 'dzire')) %>% #select(name) %>% unique()
+  group_by(name, year, fuel_type, owner_type,) %>% 
+  select( #contains("Swift"),
+          kilometers_driven,
+          fuel_type,
+          owner_type,
+          price,
+          mileage_km_l,
+          year) %>% 
+  mutate(avg_km_driven = mean(kilometers_driven),
+         avg_price = mean(price),
+         avg_mileage = mean(mileage_km_l)
+         ) %>% 
+  select(-c(kilometers_driven, price, mileage_km_l)) #%>% View()
+
+  
+verna <- impg %>% filter(manufacturer == "hyundai") %>% 
+  filter(str_detect(name, 'verna')) %>% #select(name) %>% unique()
+  group_by(name, year, fuel_type, owner_type,) %>% 
+  select( #contains("Swift"),
+          kilometers_driven,
+          fuel_type,
+          owner_type,
+          price,
+          mileage_km_l,
+          year) %>% 
+  mutate(avg_km_driven = mean(kilometers_driven),
+         avg_price = mean(price),
+         avg_mileage = mean(mileage_km_l)
+         ) %>% 
+  select(-c(kilometers_driven, price, mileage_km_l)) #%>% View()  
+```
+```{r}
+dzire %>% glimpse()
+
+
+dzire %>% View()
+```
+```{r}
+dzire %>% select(name)
+
+fct_count(dzire$name, sort = TRUE) %>% filter(n != 0)
+
+dim(dzire)
+```
+
+
+```{r}
+dzire %>% tabyl(name) %>% filter(n !=0) %>% 
+  adorn_pct_formatting(digits = 0, affix_sign = TRUE)
+
+dzire %>% tabyl(owner_type) %>% 
+  adorn_pct_formatting(digits = 0, affix_sign = TRUE)
+
+dzire %>% tabyl(year) %>% 
+  adorn_pct_formatting(digits = 0, affix_sign = TRUE)
+
+dzire %>% tabyl(fuel_type) %>% 
+  adorn_pct_formatting(digits = 0, affix_sign = TRUE)
+```
+
+## Cross tabulation
+```{r}
+dzire %>% tabyl(fuel_type, year) %>% 
+  adorn_totals(where = c("row","col")) %>% 
+  adorn_percentages(denominator = "col") %>% 
+  adorn_pct_formatting(digits = 0) 
+```
+
+```{r}
+dzire %>% tabyl(fuel_type, year, owner_type) %>% 
+  adorn_totals(where = c("row","col")) %>% 
+  adorn_percentages(denominator = "col") %>% 
+  adorn_pct_formatting(digits = 0) 
+
+table
+```
+
+```{r}
+dzire %>% mutate(owner_type = fct_collapse(owner_type,
+                                           other = c("third", 
+                                                     "fourth"))
+                   
+  
+) %>% tabyl(owner_type)
+```
+```{r}
+
+```
+

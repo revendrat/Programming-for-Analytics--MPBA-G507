@@ -1,0 +1,144 @@
+---
+title: "Visualisation-II"
+author: "Revendranath T"
+date: "27/9/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## static plot
+```{r}
+library(ggplot2)
+iris %>% glimpse()
+
+p <- ggplot(data = iris, aes(x = Petal.Width, y = Petal.Length)) + 
+  geom_point()
+
+plot(p)
+#or
+p
+```
+
+
+## ggAnimate
+```{r}
+# packages required
+install.packages('gganimate')
+install.packages('gifski')
+#install.packages('png')
+
+library(gifski)
+#library(png)
+library(gganimate)
+
+class(p)
+
+# add transition to p (ggplot) object
+anim <- p + 
+  transition_states(Species,
+                    transition_length = 2,
+                    state_length = 1)
+
+anim
+!```
+## what changed from static to animation?
+* **transition_states()** splits up plot data by a discrete variable and animates between the different states.
+* Transitions are functions that interpret the plot data in order to somehow distribute it over a number of frames. 
+* transition_states() specifically splits the data into subsets based on a variable in the data (here Species), and calculates intermediary data states that ensures a smooth transition between the states (something referred to as tweening). 
+* gganimate provides a range of different transitions
+
+## Easing
+* Easing is to decide how the change from one value to another should progress. 
+* The default easing is linear, but others can be used, potentially only targeting specific aesthetics. 
+* Setting easing is done with the ease_aes() function. 
+* The first argument sets the default easing and subsequent named arguments sets it for specific aesthetics.
+
+```{r}
+anim + 
+  ease_aes('cubic-in-out') # Slow start and end for a smoother look
+```
+* ease_aes() defines the velocity with which aesthetics change during an animation.
+```{r}
+anim + 
+  ease_aes(y = 'bounce-out') # Sets special ease for y aesthetic
+anim
+```
+# Labeling
+* It can be quite hard to understand an animation without any indication as to what each time point relates to. 
+* gganimate solves this by providing a set of variables for each frame, which can be inserted into plot labels using glue syntax.
+* Use glue syntax to insert frame variables in plot labels and titles.
+* Different transitions provide different frame variables. closest_state only makes sense for transition_states() and is thus only available when that transition is used.
+```{r}
+anim + 
+  ggtitle('Now showing {closest_state}',
+          subtitle = 'Frame {frame} of {nframes}')
+```
+## Line plot equivalent of above animate
+```{r}
+ggplot(iris, aes(x = Petal.Width, y = Petal.Length)) + 
+  geom_line(aes(group = rep(1:50, 3)), colour = 'grey') + 
+  geom_point()
+```
+## Add some aesthetics that distinguish the different species
+
+```{r}
+ggplot(iris, aes(x = Petal.Width, y = Petal.Length)) + 
+  geom_point(aes(colour = Species)) + 
+  transition_states(Species,
+                    transition_length = 2,
+                    state_length = 1) +
+   ggtitle('Now showing {closest_state}',
+          subtitle = 'Frame {frame} of {nframes}')
+```
+## Set the group directly
+* The group aesthetic defines how the data in a layer is matched across the animation.
+* 
+```{r}
+
+seq_along(iris$Species)
+
+ggplot(iris, aes(x = Petal.Width, y = Petal.Length)) + 
+  geom_point(aes(group = seq_along(Species))) + 
+  transition_states(Species,
+                    transition_length = 1,
+                    state_length = 0.5)
+```
+## Group enhancement
+```{r}
+ggplot(iris, aes(x = Petal.Width, y = Petal.Length)) + 
+  geom_point(aes(colour = Species, group = 1L)) + 
+  transition_states(Species,
+                    transition_length = 2,
+                    state_length = 1)
+```
+## Enter and Exit
+* modify the state of appearing (entering) and disappearing (exiting) data, so that the animation can tween from and to the new state.
+```{r}
+anim <- ggplot(iris, aes(x = Petal.Width, y = Petal.Length)) + 
+  geom_point(aes(colour = Species), size = 2) + 
+  transition_states(Species,
+                    transition_length = 1,
+                    state_length = 0.5)
+
+anim + 
+  enter_fade() + 
+  exit_shrink()
+```
+## enter and Exit through drift
+```{r}
+anim + 
+  enter_fade() + enter_drift(x_mod = -1) + 
+  exit_shrink() + exit_drift(x_mod = 5)
+```
+
+
+
+## Additional readings
+* https://exts.ggplot2.tidyverse.org/gallery/
+* https://www.r-graph-gallery.com
+
+## Reference:
+* https://cran.r-project.org/web/packages/gganimate/vignettes/gganimate.html
+

@@ -1,0 +1,335 @@
+---
+title: "Cleaning Input Files Janitor"
+author: "Revendranath T"
+date: "8/2/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Motivation
+
+* Data scientists, according to interviews and expert estimates, spend from 50 percent to 80 percent of their time mired in this more mundane labor of collecting and preparing unruly digital data, before it can be explored for useful nuggets.
+** “For Big-Data Scientists, ‘Janitor Work’  Is Key Hurdle to Insight” (New York Times, 2014)
+
+# Load libraries
+```{r}
+library(readxl)
+library(janitor)
+library(tidyverse)
+library(here)
+```
+
+#copied from the clipboard while loading the excel file
+```{r}
+#library(readxl)
+dirty_data_janitor <- read_excel("G:/My Drive/Courses/Programming for Analytics (MPBA G507)/For Students/Course materials/5) Data Wrangling Operations/dirty_data_janitor.xlsx")
+View(dirty_data_janitor)
+
+# library(readxl)
+# dirty_data_janitor <- read_excel("dirty_data_janitor.xlsx", 
+#     skip = 1)
+# View(dirty_data_janitor)
+```
+
+
+#read the file dirty_data_janitor
+```{r}
+dirty_data_janitor <- 
+  read_excel("G:/My Drive/Courses/Programming for Analytics (MPBA G507)/For Students/Course materials/5) Data Wrangling Operations/dirty_data_janitor.xlsx")
+
+#to get pipe operator; Ctrl+shift+m
+dirty_data_janitor %>% # pipe operator magnitrr
+  glimpse()
+
+dirty_data_janitor
+```
+```{r}
+dirty_data_janitor %>% str()
+```
+
+
+#another way to read the file
+
+```{r}
+dirty_data_janitor <- 
+  read_excel(here("G:/My Drive/Courses/Programming for Analytics (MPBA G507)/For Students/Course materials/5) Data Wrangling Operations/dirty_data_janitor.xlsx"))
+
+View(dirty_data_janitor)
+
+class(dirty_data_janitor)
+
+```
+
+#clean_names() is a convenience version of make_clean_names() 
+#that can be used for piped data.frame workflows
+```{r}
+
+x <-  clean_names(dirty_data_janitor)
+
+View(x)
+
+#Tidyverse
+
+dirty_data_janitor %>% 
+  clean_names() %>% 
+  summary()
+  
+```
+
+
+#Just compare column names
+```{r}
+data.frame(dirty_data_janitor = colnames(dirty_data_janitor), 
+           x = colnames(x))
+
+x %>% glimpse()
+
+x[1,]
+names(x)
+names(x) <- x[1,]
+x
+
+x %>% glimpse()
+
+View(x)
+
+x %>% 
+  clean_names() %>% 
+  View()
+```
+
+
+
+## Another way to do the above steps
+```{r}
+dirty_data_janitor1 <- read_excel(here("G:/My Drive/Courses/Programming for Analytics (MPBA G507)/For Students/Course materials/5) Data Wrangling Operations/dirty_data_janitor.xlsx"), 
+                                 skip = 1,
+                                 .name_repair = make_clean_names)
+
+View(dirty_data_janitor1)
+
+#or
+dirty_data_janitor1 <- read_excel(here("G:/My Drive/Courses/Programming for Analytics (MPBA G507)/For Students/Course materials/5) Data Wrangling Operations/dirty_data_janitor.xlsx"), 
+                                 skip = 1) %>% 
+  clean_names()
+
+View(dirty_data_janitor1)
+
+dirty_data_janitor1 <- read_excel(here("G:/My Drive/Courses/Programming for Analytics (MPBA G507)/For Students/Course materials/5) Data Wrangling Operations/dirty_data_janitor.xlsx"), 
+                                 skip = 4) %>% 
+  clean_names()
+
+View(dirty_data_janitor1)
+
+glimpse(dirty_data_janitor1)
+
+dirty_data_janitor1 %>%  
+  glimpse()
+
+read_excel(here("G:/My Drive/Courses/Programming for Analytics (MPBA G507)/For Students/Course materials/5) Data Wrangling Operations/dirty_data_janitor.xlsx"), 
+                                 skip = 8) %>% 
+  View()
+  
+  clean_names()
+
+```
+
+
+
+## Another way to do the above steps
+```{r}
+dirty_data_janitor2 <- read_excel(here("G:/My Drive/Courses/Programming for Analytics (MPBA G507)/For Students/Course materials/5) Data Wrangling Operations/dirty_data_janitor.xlsx")) %>%
+  row_to_names(row_number = 1) %>%
+  clean_names()
+
+dirty_data_janitor2 <- 
+read_excel(here("G:/My Drive/Courses/Programming for Analytics (MPBA G507)/For Students/Course materials/5) Data Wrangling Operations/dirty_data_janitor.xlsx")) %>% 
+  row_to_names(row_number = 1) %>% 
+  clean_names() 
+  
+
+dirty_data_janitor2 %>% glimpse()
+
+View(dirty_data_janitor2)
+```
+## Coalesce Illustration
+```{r}
+#dplyr
+x <- c(1,2, NA, 4, 5, NA, NA, 7)
+y <- c(4,5, 12, 9, NA, 13, NA, 14)
+
+print(paste0("x :", x))
+print(paste0("y :", y))
+print(coalesce(x,y))
+```
+```{r}
+mean(x)
+mean(x, na.rm=TRUE)
+x
+x %>% 
+coalesce(0)
+
+x %>% 
+coalesce(0)
+
+x %>% 
+coalesce(mean(x, na.rm=TRUE))
+
+coalesce(x, 
+         mean(x, na.rm=TRUE))
+
+c1 <- dirty_data_janitor2$certification
+c2 <- dirty_data_janitor2$certification_2
+
+print(c1)
+print(c2)
+print(coalesce(c1,c2))
+
+cbind(c1,c2,coalesce(c1,c2))
+
+excel_numeric_to_date(39690)
+```
+
+
+# Tidy up the dirty_data_janitor2 further
+```{r}
+#Given a set of vectors, coalesce() finds the 
+#first non-missing value at each position. 
+
+tidy_dirty_data_janitor <- dirty_data_janitor2 %>%
+  remove_empty(which = "cols") %>% # removes all empty columns
+  #remove_empty(which = "rows") %>% # removes all empty rows (not working)
+  remove_constant(na.rm = TRUE, quiet = FALSE) %>% # remove the column of all "Yes"/"No values 
+  remove_empty(which = "rows") %>%
+  mutate(hire_date_1 = convert_to_date(hire_date, 
+                                      # handle the mixed-format dates
+                                     character_fun = lubridate::mdy),
+         #or use excel_numeric_to_date(hire_date), if all values are numeric only
+         #hire_date_2 = excel_numeric_to_date(hire_date),
+         cert = coalesce(certification, certification_2)) %>%
+  select(-hire_date, -certification, -certification_2) # drop unwanted columns
+```
+
+```{r}
+tidy_dirty_data_janitor %>% glimpse()
+
+View(dirty_data_janitor2)
+
+View(tidy_dirty_data_janitor)
+```
+
+## wrtie the cleaned dataframe to another excel
+```{r}
+library(writexl)
+write_xlsx(tidy_dirty_data_janitor,
+path = "G:/My Drive/Courses/Programming for Analytics (MPBA G507)/For Students/Course materials/5) Data Wrangling Operations/tidy_dirty_data_janitor.xlsx",
+col_names = TRUE,
+format_headers = TRUE,
+use_zip64 = FALSE
+)
+```
+
+
+#Find duplicates
+```{r}
+tidy_dirty_data_janitor %>% 
+  get_dupes(contains("name"))
+
+tidy_dirty_data_janitor %>% 
+  get_dupes(contains("subject"))
+#or
+tidy_dirty_data_janitor %>% 
+  get_dupes(subject)
+```
+
+## Tabulating tools
+* tabyls: a tidy, fully-featured approach to counting things
+* A variable (or combinations of two or three variables) can be tabulated with tabyl()
+* tabyl can be called two ways:
+  * On a vector, when tabulating a single variable: tabyl(tidy_dirty_data_janitor$subject)
+  * On a data.frame, specifying 1, 2, or 3 variable names to tabulate: tidy_dirty_data_janitor %>% tabyl(subject, employee_status).
+      * Here the data.frame is passed in with the %>% pipe; this allows tabyl to be used in an analysis pipeline
+
+```{r}
+#When NA values are present, tabyl() also displays “valid” percentages, i.e., with missing values removed from the denominator.
+tidy_dirty_data_janitor %>%
+  tabyl(subject)
+```
+
+```{r}
+# two variables:
+#This is often called a “crosstab” or “contingency” table. Calling tabyl on two columns of a data.frame produces the same result as the common combination of dplyr::count(), followed by tidyr::pivot_wider() to wide form:
+tidy_dirty_data_janitor %>% 
+  tabyl(subject, employee_status)
+```
+#Enhance using adorn_ family of functions
+```{r}
+tidy_dirty_data_janitor %>% 
+  tabyl(subject, employee_status)
+```
+```{r}
+tidy_dirty_data_janitor %>% 
+  tabyl(subject, employee_status) %>% 
+  adorn_percentages("col") 
+# %>%  #row-wise percentage
+#   adorn_pct_formatting(digits = 2) %>%
+#   adorn_ns()
+```
+
+
+```{r}
+tidy_dirty_data_janitor %>% 
+  tabyl(subject, employee_status) %>% 
+  adorn_percentages("col") %>%  #row-wise percentage
+  adorn_pct_formatting(digits = 2) %>%
+  adorn_ns()
+```
+
+```{r}
+tidy_dirty_data_janitor %>% 
+  tabyl(subject, employee_status) %>% 
+  adorn_percentages("col") %>%  #column-wise percentage
+  adorn_pct_formatting(digits = 2) %>%
+  adorn_ns() %>%
+  knitr::kable()
+```
+
+```{r}
+
+# two variables:
+tidy_dirty_data_janitor %>%
+  filter(hire_date_1 > as.Date("1950-01-01")) %>%
+  tabyl(employee_status, full_time) %>%
+  knitr::kable()
+```
+
+```{r}
+
+# three variables:
+tidy_dirty_data_janitor %>%
+  tabyl(full_time, subject, 
+        employee_status, 
+        show_missing_levels = FALSE)
+```
+## Adorning tabyls
+* The adorn_ functions dress up the results of these tabulation calls for fast, basic reporting.
+* Similar to pivot functionality in MS Excel
+```{r}
+tidy_dirty_data_janitor %>%
+  tabyl(employee_status, full_time) %>%
+  adorn_totals("both") %>% # Add totals row, column, or both.
+  adorn_percentages("row") %>% #Calculate percentages along either axis or over the entire tabyl
+  adorn_pct_formatting() %>% #Format percentage columns, controlling the number of digits to display and whether to append the % symbol
+  adorn_ns() %>% #add Ns to a tabyl. 
+  adorn_title("combined") %>% #add a title to a tabyl (or other data.frame).
+  knitr::kable() # tidy for representation
+```
+excel_numeric_to_date(41103)
+
+## Reference
+* Illustrations from: https://github.com/sfirke/janitor
+* Read more: https://garthtarr.github.io/meatR/janitor.html
+* More readings on tabyl: https://cran.r-project.org/web/packages/janitor/vignettes/tabyls.html

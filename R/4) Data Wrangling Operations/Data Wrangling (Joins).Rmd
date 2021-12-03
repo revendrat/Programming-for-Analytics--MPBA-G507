@@ -1,0 +1,125 @@
+---
+title: "joins in tidyverse"
+author: "Revendranath T"
+date: "27/9/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+```
+
+## joins
+* mutating
+* filtering
+* nesting
+
+## Mutating joins: combine variables from the two data.frames:
+```{r}
+print(band_members)
+print(band_instruments)
+```
+
+
+### inner_join()
+* return all rows from x where there are matching values in y, and all columns from x and y. If there are multiple matches between x and y, all combination of the matches are returned.
+
+```{r}
+band_members %>% inner_join(band_instruments, by="name")
+```
+
+### left_join() 
+* return all rows from x, and all columns from x and y. Rows in x with no match in y will have NA values in the new columns. If there are multiple matches between x and y, all combinations of the matches are returned.
+```{r}
+band_members %>% left_join(band_instruments, by ="name")
+#or
+ band_instruments %>% right_join(band_members, by ="name")
+#india %>% left_join(usa, by ="product_id")
+```
+
+### right_join()
+* return all rows from y, and all columns from x and y. Rows in y with no match in x will have NA values in the new columns. If there are multiple matches between x and y, all combinations of the matches are returned.
+
+```{r}
+band_members %>% right_join(band_instruments, by ="name")
+#or
+band_instruments %>% left_join(band_members, by ="name")
+```
+
+### full_join()
+* return all rows and all columns from both x and y. Where there are not matching values, returns NA for the one missing.
+```{r}
+band_members %>% full_join(band_instruments, by ="name")
+```
+
+```{r}
+band_instruments %>% full_join(band_members, by ="name")
+```
+
+## Filtering joins keep cases from the left-hand data.frame:
+
+### semi_join()
+* return all rows from x where there are matching values in y, keeping just columns from x. A semi join differs from an inner join because an inner join will return one row of x for each matching row of y, where a semi join will never duplicate rows of x.
+```{r}
+band_members %>% inner_join(band_instruments, by = "name") %>% 
+  select(name, band)
+
+band_members %>% semi_join(band_instruments, by = "name")
+
+band_instruments %>% semi_join(band_members, by = "name")
+```
+
+### anti_join()
+* return all rows from x where there are not matching values in y, keeping just columns from x.
+```{r}
+print(band_members)
+print(band_instruments)
+```
+
+
+
+```{r}
+#print(band_members %>% inner_join(band_instruments, by = "name"))
+print(band_members %>% anti_join(band_instruments, by = "name"))
+```
+
+## Nesting joins create a list column of data.frames:
+* "Nesting" joins keep cases from the LHS and nests the RHS
+
+### nest_join()
+* return all rows and all columns from x. Adds a list column of tibbles. 
+* Each tibble contains all the rows from y that match that row of x. When there is no match, the list column is a 0-row tibble with the same column names and types as y.
+* nest_join() is the most fundamental join since you can recreate the other joins from it. 
+* An inner_join() is a nest_join() plus an tidyr::unnest(), and left_join() is a nest_join() plus an unnest(.drop = FALSE). 
+* A semi_join() is a nest_join() plus a filter() where you check that every element of data has at least one row, and 
+* an anti_join() is a nest_join() plus a filter() where you check every element has zero rows.
+```{r}
+# "Nesting" joins keep cases from the LHS and nests the RHS
+
+band_members %>% nest_join(band_instruments, by = "name") %>% select(band_instruments) %>% glimpse()
+
+print(band_instruments %>% nest_join(band_members, by = "name"))
+```
+
+```{r}
+# To suppress the message, supply by
+band_members %>% inner_join(band_instruments, by = "name")
+# This is good practice in production code
+
+```
+
+```{r}
+# Use a named `by` if the join variables have different names
+band_members %>% full_join(band_instruments2, by = c("name" = "artist"))
+
+# Note that only the key from the LHS is kept
+```
+
+
+## References
+* https://dplyr.tidyverse.org/reference/join.html
+* https://www.r-bloggers.com/2018/10/how-to-perform-merges-joins-on-two-or-more-data-frames-with-base-r-tidyverse-and-data-table/

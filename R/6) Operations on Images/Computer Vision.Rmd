@@ -1,0 +1,17 @@
+---
+title: "Computer Vision"
+author: "PfA Teaching Team"
+date: "10/5/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Install R-OpenCV (Lite version)
+
+```{r}
+
+```
+

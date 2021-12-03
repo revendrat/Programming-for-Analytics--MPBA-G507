@@ -1,0 +1,44 @@
+---
+title: "My First R Session"
+author: "Annapurna"
+date: "8/25/2021"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+# Run this command to know the installed Version of R
+```{r}
+R.Version()
+```
+
+## Run this command to know the directory in which you are operating
+```{r}
+dir()
+```
+
+### Run this command to know the date in human readable format
+```{r}
+date()
+```
+
+### Run this command to know the date in system format
+```{r}
+Sys.time()
+```
+
+#### Run this command to know the packages loaded in R environment
+```{r}
+sessionInfo()
+```
+
+
+
+
+
+

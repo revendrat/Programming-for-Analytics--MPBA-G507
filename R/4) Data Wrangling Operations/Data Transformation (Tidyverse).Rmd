@@ -1,0 +1,642 @@
+---
+title: "Data Transformation (Tidyverse)"
+author: "Revendranath T"
+date: "9/20/2021"
+output:
+  slidy_presentation: default
+  ioslides_presentation: default
+---
+
+```{r setup, include=FALSE}
+#load libary
+
+library(tidyverse)
+
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Goals and Introduction
+
+By the end of this tutorial, you will know:
+
++ What "tidy data" is and why it's an awesome format
++ How to do some stuff with tidy data
++ How to get your data to be tidy
++ Some tips'n'tricks for dealing with "medium data" in R
++ functions & pipes (%>%) are at the heart of tidyverse
++ pipe (%>%) shortcut Ctrl+Shift+M
+Uses the famous `iris` dataset that comes with `ggplot2` package
+
+
+## iris dataset
+* Details about the dataset: https://www.kaggle.com/uciml/iris
+* Further details: https://archive.ics.uci.edu/ml/datasets/iris
+
+```{r}
+View(iris)
+head(iris)
+str(iris)
+iris %>% glimpse()
+summary(iris)
+#or
+iris %>% summary() %>% knitr::kable()
+
+mean(iris$Petal.Length) #readable
+#or
+iris$Petal.Length %>% 
+  mean() #readable?
+
+#instead we can use following
+mean_PL <- iris$Petal.Length %>% mean()
+
+# mean for unique values
+mean(unique(iris$Petal.Length))
+#or
+iris$Petal.Length %>% unique() %>% mean(na.rm=TRUE)
+
+iris$Petal.Length %>% unique() %>% mean()
+
+#round mean for unique values
+round(mean(unique(iris$Petal.Length, na.rm=TRUE)), digits = 2)
+#or
+
+iris$Petal.Length %>% 
+  unique() %>% 
+  mean() %>% 
+  round(digits = 2)
+
+#debug error
+iris%>% 
+  select(Petal.Length) %>% 
+  unique %>% 
+  mean(na.rm = TRUE) %>% 
+  round(digits = 2)
+
+iris$Petal.Length #base R
+
+iris %>% 
+  select(Petal.Length) #Tidyverse
+
+iris %>% 
+  select(-c(Petal.Length, 
+           Petal.Width)
+         )
+```
+```{r}
+iris %>% str()
+```
+
+## NYC Flights Dataset
+* On-time data for a random sample of flights departing New York City airports in 2013.
+```{r}
+library(nycflights13)
+library(tidyverse)
+
+str(flights)
+
+flights %>% head(5)
+
+flights %>% tail()
+```
+### data types in the dataset flights
+* int stands for integers.
+* dbl stands for doubles, or real numbers.
+* chr stands for character vectors, or strings.
+* dttm stands for date-times (a date + a time).
+* lgl stands for logical, vectors that contain only TRUE or FALSE.
+* fctr stands for factors, which R uses to represent categorical variables with fixed possible values.
+* date stands for dates.
+
+
+### Basic transformation operations
+* Pick observations by their values (filter()).
+* Reorder the rows (arrange()).
+* Pick variables by their names (select()).
+* Create new variables with functions of existing variables (mutate()).
+* Collapse many values down to a single summary (summarise())
+* To group use: group_by()
+
+### FILTER
+```{r}
+filter(flights, month == 1, day == 1) %>% 
+  select(flight, carrier, dep_delay ) %>% 
+  group_by(carrier) %>% 
+  summarise( mean = mean(dep_delay))
+
+flights %>%  
+  filter( month == 1, day == 1) %>% 
+  select(flight, carrier, dep_delay ) %>% 
+  group_by(carrier) %>% 
+  summarise( mean_name = mean(dep_delay), 
+             median_name = median(dep_delay), 
+             sd_name = sd(dep_delay))
+
+
+# Assign using filter
+
+jan1 <- filter(flights, month == 1, day == 1, year==2013)
+#or
+jan1 <- flights %>% filter(month == 1, 
+                           day == 1, 
+                           year==2013)
+jan1
+
+# Assign & display
+
+(dec25 <- filter(flights, month == 12, day == 25))
+
+(dec25 <- flights %>% filter(month == 12, 
+                             day == 25)
+  )
+
+```
+
+#### Comparison using FILTER
+* To use filtering effectively, you have to know how to select the observations that you want using the comparison operators. 
+* R provides the standard suite: >, >=, <, <=, != (not equal), and == (equal).
+
+```{r}
+# a = 1
+# a <- 1
+#Is this right?
+filter(flights, month = 1) 
+#or is this?
+filter(flights, month == 1)
+
+#The following code finds all flights that departed in November or December:
+filter(flights, month == 11 | month == 12)
+
+flights %>% 
+  filter( month == 11 | 
+            month == 12 |
+            month == 1)
+
+# Is this right to find all flights departed in November or December?
+filter(flights, month == (11 | 12))
+flights %>% 
+  filter( month == (11 |  12))
+# Dig what is wrong in the above code
+
+x <- 12
+
+x
+x == (11||12)
+
+x <- 7
+(x == 11 | x ==12)
+```
+#### use %in% to simplify FILTER
+```{r}
+#Flight details in the month of november and december and jan
+nov_dec_jan <- filter(flights, month %in% c(11, 12,1))
+#or
+nov_dec_jan <- flights %>% 
+  filter(month %in% c(11, 12,1))
+
+nov_dec_jan %>% filter( month == 12)
+```
+
+
+### Arrange values
+* arrange() works similarly to filter() 
+* except that instead of selecting rows, it changes their order. 
+* It takes a data frame and a set of column names (or more complicated expressions) to order by. 
+* If you provide more than one column name, each additional column will be used to break ties in the values of preceding columns
+```{r}
+arrange(flights, year, month, day)
+
+flights %>% arrange(year, 
+                    month, 
+                    day)
+# What is the order by default?
+
+#arrange(flights, desc(year, month, day))
+flights %>%  arrange(desc(month, 
+                          day, 
+                          year)
+                     ) 
+
+flights$year %>% unique
+
+#Use desc() to re-order by a column in descending order:
+arrange(flights, desc(dep_delay))
+
+flights %>% arrange(desc(dep_delay)
+                    )
+
+flights %>%  
+  filter( month == 1, day == 1) %>% 
+  select(flight, carrier, dep_delay ) %>% 
+  group_by(carrier) %>% 
+  summarise( mean_name = mean(dep_delay), 
+             median_name = median(dep_delay), 
+             sd_name = sd(dep_delay)) %>% 
+  arrange( desc(mean_name)
+  )
+
+#Missing values come at the end
+df <- tibble(x = c(5, NA, 2, NA))
+df
+#df <- data.frame(x = c(5, 2, NA))
+
+arrange(df, x)
+df %>%  arrange(x)
+
+arrange(df, desc(x))
+
+df %>%  arrange(desc(x))
+
+```
+
+### Select columns with select()
+```{r}
+flights %>% glimpse()
+
+flights[,c(1,7,10)]
+
+# Select columns by name
+select(flights, year, month, day)
+#or
+flights %>% 
+  select(year, month, day)
+
+flights %>% 
+  select(flight, carrier, dep_delay)
+
+# Select all columns between year and day (inclusive)
+select(flights, year:dep_time)
+#or
+flights %>% select(year:dep_time)
+
+# Select all columns except those from year to day (inclusive)
+select(flights, -(year:dep_time))
+#or
+flights %>% select(-(year:dep_time))
+
+```
+
+### Helper functions in select
+* starts_with("abc"): matches names that begin with “abc”.
+* ends_with("xyz"): matches names that end with “xyz”.
+* contains("ijk"): matches names that contain “ijk”.
+* matches("(.)\\1"): selects variables that match a regular expression. This one matches any variables that contain repeated characters. You’ll learn more about regular expressions in strings. matches("f2018")
+* num_range("x", 1:3): matches x1, x2 and x3
+* To rename variables, do not use select(), use rename() which is a variant of select() that keeps all the variables that aren’t explicitly mentioned
+* select() in conjunction with the everything() helper. This is useful if you have a handful of variables you’d like to move to the start of the data frame.
+
+```{r}
+flights %>% glimpse()
+rename(flights, tail_num = tailnum) 
+#or
+flights %>% rename(tail_num = tailnum)  %>% glimpse()
+
+#(flights <- flights %>% rename(tail_num = tail_num))
+
+select(flights, time_hour, air_time, everything())
+#or
+flights %>% select( time_hour, 
+                    air_time, 
+                    everything())
+
+flights %>% select(starts_with("dep_"), 
+                   ends_with("t"),
+                   contains("rr"))
+```
+
+## Add new variables with mutate()
+* mutate() always adds new columns at the end of your dataset so we’ll start by creating a narrower dataset so we can see the new variables.
+```{r}
+flights_sml <- select(flights, 
+  year:day, 
+  ends_with("delay"), 
+  distance, 
+  air_time
+)
+# or
+
+flights_sml <- flights %>%  
+  select( 
+  year:day, 
+  ends_with("delay"), 
+  distance, 
+  air_time
+)
+
+flights_sml %>% glimpse()
+
+flights_sml %>% filter(dep_delay <0) 
+
+mutate(flights_sml,
+  gain = dep_delay - arr_delay,
+  speed = distance / air_time * 60
+)
+
+flights_sml %>% 
+  filter(dep_delay > 0) %>% 
+  mutate(gain = dep_delay - arr_delay,
+  speed = (distance / air_time) * 60
+)
+
+flights_sml %>% glimpse()
+
+
+flights_sml <- flights_sml %>% 
+  filter(dep_delay > 0) %>% 
+  mutate(gain = dep_delay - arr_delay,
+  speed = (distance / air_time) * 60
+)
+
+flights_sml %>% glimpse()
+
+#Once new variables are created they can be referred and used to create new variables
+#The code below will throw error: Why?
+flights_sml %>% mutate( hours = air_time/60,
+                        gain_per_hour = gain/hours,
+                        gain = dep_delay-arr_delay)
+
+#the code below works to create new variables, why?
+mutate(flights_sml,
+  gain = dep_delay-arr_delay,
+  hours = air_time/60,
+  gain_per_hour = gain/hours
+)
+# or
+flights_sml %>% mutate( gain = dep_delay-arr_delay,
+                        hours = air_time/60,
+                        gain_per_hour = gain/hours)
+
+# If you only want to keep the new variables, use transmute():
+
+
+
+transmute(flights_sml,
+  gain = dep_delay - arr_delay,
+  hours = air_time / 60,
+  gain_per_hour = gain / hours
+)
+
+#or
+flights_sml %>% transmute(gain = dep_delay - arr_delay,
+  hours = air_time / 60,
+  gain_per_hour = gain / hours
+)
+
+## throws an error below:
+flights_sml %>% transmute( gain_per_hour = gain / hours,
+  hours = air_time / 60,
+  gain = dep_delay - arr_delay
+)
+
+flights_sml %>% transmute(hours = air_time / 60,
+                          gain = dep_delay - arr_delay,
+                          gain_per_hour = gain / hours
+                          )
+```
+
+### Key considerations while creating variables
+*  mutate() or transmute() must take a vector of values as input, return a vector with the same number of values as output.
+* Examples: arithmetic operations, logs, offsets and leads, logical operations, cumulative and rolling aggregates,  ranking, etc.
+
+```{r}
+x <- flights$dep_time
+class(x)
+x
+```
+
+
+```{r}
+#modular arithmetic
+transmute(flights,
+  dep_time,
+  hour = dep_time %/% 100, #integer division
+  minute = dep_time %% 100 # reminder 
+)
+#or
+flights %>% 
+  transmute( dep_time,
+  hour = dep_time %/% 100, #integer division
+  minute = dep_time %% 100 # reminder 
+)
+
+#examples of lag & lead
+(x <- 1:10)
+print(x)
+print(lag(x))
+print(lead(x))
+
+# cumulative aggregates
+print(x)
+print(cumsum(x))
+print(cummean(x))
+
+#ranking 
+y <- c(1, 2, 2, NA, 3, 4)
+print(y)
+print(min_rank(y))
+print(desc(y))
+
+print(min_rank(desc(y)))
+
+print(sort(y))
+print(min_rank(sort(y)))
+print(sort(desc(y)))
+print(min_rank(sort(desc(y))))
+
+#If min_rank() doesn’t do what you need, look at the variants row_number(), dense_rank(), percent_rank(), cume_dist(), ntile().
+```
+```{r}
+summary(y)
+```
+
+## Grouped summaries with summarise()
+* summarise() provides summary & collapses a data frame to a single row
+
+```{r}
+summarise(flights, delay = mean(dep_delay, na.rm = TRUE))
+#or
+flights %>% summarise(mean_delay = mean(dep_delay, 
+                                   na.rm = TRUE),
+                      median_delay = median(dep_delay, 
+                                   na.rm = TRUE),
+                      rows= n()
+                      )
+```
+* When you need to summarise by groups then use group_by()
+```{r}
+by_day <- group_by(flights, year, month, day)
+#or
+by_day <- flights %>%  
+  group_by(year, 
+           month, 
+           day)
+
+summarise(by_day, delay = mean(dep_delay, na.rm = TRUE))
+
+```
+
+## Power of tidyverse in R through piping
+* Combining multiple operations with the pipe
+
+```{r}
+by_dest <- group_by(flights, dest)
+#or
+by_dest <- flights %>% 
+  group_by(dest)
+
+delay <- summarise(by_dest,
+  count = n(),
+  dist = mean(distance, na.rm = TRUE),
+  delay = mean(arr_delay, na.rm = TRUE)
+)
+
+delay
+
+delays <- filter(delay, count > 20, dest != "HNL")
+
+delay %>% filter(count > 10000,
+                 dest != "HNL")
+
+# Perform above operations using piping
+delays <- flights %>% 
+  group_by(dest) %>% 
+  summarise(
+    count = n(),
+    dist = mean(distance, na.rm = TRUE),
+    delay = mean(arr_delay, na.rm = TRUE)
+  ) %>% 
+  filter(count > 20, dest != "HNL")
+
+#Plot the same. We will do plotting in the 2nd part of this session
+ggplot(data = delay, mapping = aes(x = dist, y = delay)) +
+  geom_point(aes(size = count), alpha = 1/3) +
+  geom_smooth(se = FALSE)
+#or
+delay %>% ggplot(mapping = aes(x = dist, y = delay)) +
+  geom_point(aes(size = count), alpha = 1/3) +
+  geom_smooth(se = FALSE)
+
+```
+### Other operations
+* Missing values
+* Counts: Whenever you do any aggregation, it’s always a good idea to include either a count (n()), or a count of non-missing values (sum(!is.na(x))). That way you can check that you’re not drawing conclusions based on very small amounts of data.
+```{r}
+x <- c(1, NA, 3)
+print(x)
+print(is.na(x))
+print(!is.na(x))
+#missing values
+flights %>% 
+  group_by(year, month, day) %>% 
+  summarise(mean = mean(dep_delay))
+
+#Compare without missing values
+flights %>% 
+  group_by(year, month, day) %>% 
+  summarise(mean = mean(dep_delay, na.rm = TRUE))
+
+#What does this do?
+not_cancelled <- flights %>%
+  filter(!is.na(dep_delay), !is.na(arr_delay))
+not_cancelled
+not_cancelled %>% 
+  group_by(year, month, day) %>% 
+  summarise(mean = mean(dep_delay))
+
+#COUNTS
+delays <- not_cancelled %>% 
+  group_by(tailnum) %>% 
+  summarise(
+    delay = mean(arr_delay, na.rm = TRUE),
+    n = n()
+  ) 
+delays %>% glimpse()
+View(delays)
+head(delays)
+
+```
+
+### Useful summary functions
+```{r}
+# Measures of location:  mean(x), but median(x)
+not_cancelled %>% 
+  group_by(year, month, day) %>% 
+  summarise(
+    avg_delay_all = mean(arr_delay),
+    avg_delay_late = mean(arr_delay[arr_delay > 0]),# the average positive delay
+    avg_delay_early = mean(arr_delay[arr_delay < 0]),# the average negative delay
+  )
+
+# Why is distance to some destinations more variable than to others?
+#Measures of position: first(x), nth(x, 2), last(x)
+not_cancelled %>% 
+  group_by(dest) %>% 
+  summarise(distance_sd = sd(distance)) %>% 
+  arrange(desc(distance_sd))
+
+# When do the first and last flights leave each day?
+#Measures of position: first(x), nth(x, 2), last(x)
+not_cancelled %>% 
+  group_by(year, month, day) %>% 
+  summarise(
+    first = min(dep_time),
+    last = max(dep_time)
+  )
+
+# Measures of position: first(x), nth(x, 2), last(x)
+not_cancelled %>% 
+  group_by(year, month, day) %>% 
+  summarise(
+    first_dep = first(dep_time), 
+    last_dep = last(dep_time)
+  )
+
+```
+
+### Group by multiple variables & ungrouping
+```{r}
+daily <- group_by(flights, year, month, day)
+#or
+daily <- flights %>% 
+  group_by(year, month, day)
+
+daily
+
+(per_day   <- summarise(daily, flights = n()))
+
+(per_month <- summarise(per_day, flights = sum(flights)))
+
+(per_year  <- summarise(per_month, flights = sum(flights)))
+
+#or
+flights %>% 
+  select(year, month, day) %>% 
+  summarise(flights_counts =n()
+            )
+#ungrouping
+#If you need to remove grouping, and return to operations on ungrouped data, use ungroup()
+daily %>% 
+  ungroup() %>%             # no longer grouped by date
+  summarise(flights = n())  # all flights
+
+```
+
+### Grouped mutates (and filters)
+```{r}
+#Find the worst members of each group:
+flights_sml %>% 
+  group_by(year, month, day) %>%
+  filter(rank(desc(arr_delay)) < 10)
+
+#Find all groups bigger than a threshold
+popular_dests <- flights %>% 
+  group_by(dest) %>% 
+  filter(n() > 365)
+popular_dests
+
+#Standardise to compute per group metrics:
+popular_dests %>% 
+  filter(arr_delay > 0) %>% 
+  mutate(prop_delay = arr_delay / sum(arr_delay)) %>% 
+  select(year:day, dest, arr_delay, prop_delay)
+```
+

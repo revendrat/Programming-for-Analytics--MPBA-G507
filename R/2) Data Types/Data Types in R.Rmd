@@ -1,0 +1,1038 @@
+---
+title: "Data Types in R"
+author: "Revendranath T"
+date: "8/24/2021"
+output: ioslides_presentation
+---
+
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+
+
+## Using R Console
+
+- 1+1
+- max(1,2,5)
+- min(1,3,8,9)
+- q() #exit from R & RStudio
+- escape key to interrupt R
+- use help() or ? to get help from R
+- example help(mean or ?mean)
+
+## Slide with R Output
+
+```{r basics, echo = TRUE}
+pi
+sqrt(25)
+5^2
+```
+
+## Use print
+- To format any R value for printing, including structured values such as matrices and lists
+```{r print, echo=false}
+#print matrix
+
+print(matrix(c(1, 2, 3, 4), 2, 2))
+
+print(matrix(1, 2, 3, 4), 2, 2)
+
+a <- c(1,2,3,4)
+
+if(is.logical(x)){
+matrix(data=c(1, 2, 3, 4,5,6), 
+        nrow=2, 
+        ncol=3,
+        byrow=x # wierd behavior
+        )
+} else{
+  print("Error: Logical value for row based matrix formation is passed as numeric/character")
+}
+
+by_row_true <<- TRUE
+
+matrix(data=c(1, 2, 3, 4,5,6), 
+        nrow=-2, 
+        ncol=3,
+        byrow=by_row_true 
+        )
+
+
+is.logical(0)
+
+is.logical(-1)
+
+#print list
+print(list("a", "b", "c"))
+
+```
+
+
+## Working with variables
+- No need to declare variables first = or <-
+- Global variables: <<-
+- List variables: ls() or ls.str()
+- Delete variables: rm()
+
+```{r variables, echo=TRUE}
+# = or <- are used for assignment
+x = 3
+print(x)
+x <- 3
+print(x)
+
+# int x;
+# x=3;
+
+x <- 3
+print(x)
+x <- 3.5
+print(x)
+x <- "a"
+print(x)
+x <- 'a'
+print(x)
+x <- TRUE
+print(x)
+x <- "Hello"
+print(x)
+
+y <- 4
+
+
+x = c("fee", "fie", "foe", "fum") # x is a vector
+print(x)
+
+x  <-  c("fee", "fie", "foe", "fum") # x is a vector
+print(x)
+
+#global variable assignment <<-
+#That forces the assignment to a global variable rather than a local variable
+global_var <<- c(3,4)
+global_var2 <<- 2
+  
+#listing variables
+ls()
+ls.str()
+
+# delete a variable
+rm(x)
+
+# delete multiple variables
+rm(x,y)
+```
+
+### Create vectors
+- Use the c(...) operator to construct a vector from given values
+- Use mode to know the type of vector: numeric, character, boolean
+
+```{r vectors, echo=TRUE}
+x1  <-  c(1, 1, 2, 3, 5, 8, 13, 21)
+x1
+mode(x1)
+typeof(x1)
+
+
+f1 <- c(1 * pi, 2 * pi, 3 * pi, 4 * pi)
+mode(f1)
+
+s1 <- c("Welcome", "to", "BITS", "Pilani", "!")
+mode(s1)
+
+l1 <- c(TRUE, TRUE, FALSE, TRUE)
+mode(l1)
+
+```
+### Modes
+- What happens when you merge vectors of two different modes?
+```{r modes, echo=TRUE}
+
+v1 <- c(1, 2, 3)
+v1
+mode(v1)
+
+typeof(v1)
+
+v1_int <- as.integer(c(1, 2, 3))
+
+typeof(v1_int)
+
+v3 <- c("A", "B", "C")
+v3
+mode(v3)
+typeof(v3)
+
+v2 <- c(v1, v3)
+
+v2
+mode(v2)
+typeof(v2)
+
+v4 <- c(TRUE, FALSE, TRUE, FALSE)
+mode(v4)
+typeof(v4)
+
+v5 <- c(v1, v3, v4)
+mode(v5)
+typeof(v5)
+v5
+
+v6 <- c(v1,  v4)
+mode(v6)
+typeof(v6)
+v6
+```
+
+## Basic Statistics with R
+- mean()
+- median()
+- var()
+- sd()
+- cor()
+- cov()
+
+```{r, echo=TRUE}
+#assign values to variable x
+x <- c(0, 1, 1, 2, 3, 5, 8, 13, 21, 34)
+print(x)
+x[1]+1
+print(x)
+x[1] <- x[1]+1
+print(x)
+```
+
+```{r}
+
+#mean
+mean(x)
+
+#median
+median(x)
+
+#variance
+var(x)
+
+#standard deviation
+sd(x)
+
+#correlation & covariance. Need 2 variables. 
+
+# create a y variable
+print(x)
+
+x[1] <- x[1] +1
+
+print(x)
+print(x+1)
+
+y <- log(x)
+y
+#correlation
+cor(x, y)
+#covariance
+cov(x, y)
+
+```
+
+## Handling null values or NA
+- exclude null values using na.rm = TRUE
+- use imputation methods (discussed later)
+
+
+```{r, echo=TRUE}
+x <- c(0, 1, NA , NA, 1, 2, 3, NA, NA)
+x
+
+sum(100000000,NA)
+
+is.na(x)
+#without na.rm = TRUE
+mean(x)
+sd(x)
+
+#with na.rm = TRUE
+mean(x, na.rm = TRUE)
+sd(x, na.rm = TRUE)
+
+```
+
+```{r}
+
+x <- 10
+
+mul <- function(y) {
+  x*y
+}
+
+mul(7)  # --> 70
+
+
+x <<- 30
+  
+mul2 <- function(y) {
+  x <-  20
+  x*y
+}
+
+x <- 50
+print(x)
+mul2(40)
+print(x)
+
+ls.str()
+
+```
+
+
+## Basic statistics for multiple columns
+- use map_dbl() function from purrr package in tidyverse
+
+```{r, echo=TRUE}
+# use ?mtcars to verify the dataset
+library(tidyverse) #magnitrr
+help(mtcars)
+data(mtcars)
+View(mtcars)
+
+str(mtcars)
+glimpse(mtcars)
+head(mtcars)
+
+head(mtcars[c(3:5),c(2:7)])
+head(mtcars[c(1:3),])
+
+head(mtcars[,c(2:7)]) #sub-setting matrices/dataframes/lists
+
+head(mtcars[,c(2,7)])
+
+mtcars %>% select(cyl, qsec) %>% head()
+
+#mean
+map_dbl(mtcars, mean) 
+
+#or
+mtcars %>% 
+  map_dbl(mean)
+
+#median
+map_dbl(mtcars, median)
+
+#sd
+map_dbl(mtcars, sd)
+
+#var
+map_dbl(mtcars, var)
+
+#all summary statistics
+summary(mtcars)
+
+#correlation
+View(cor(mtcars))
+
+#covariance
+cov(mtcars)
+```
+
+```{r}
+mtcars %>% 
+  select(cyl:qsec) %>% 
+  head()
+```
+
+
+## Data types
+* Total six data types
+  * character
+  * numeric (real or decimal) 
+  * integer 
+  * logical 
+  * complex
+
+
+## Data Structures
+* Five prominent data structures
+  * atomic vector or scalars (homogeneous)
+  * matrix (homogeneous)
+  * arrays (homogeneous)
+  * list (heterogeneous)
+  * data frame (heterogeneous)
+
+## Use the following to examine them
+
+* class() - what kind of object is it (high-level)?
+* typeof() - what is the object’s data type (low-level)?
+* length() - how long is it? What about two dimensional objects?
+* attributes() - does it have any metadata?
+  * names
+  * dimnames
+  * dim
+  * class
+
+```{r}
+#characte
+x  <- c("hello")
+
+x <- c("hello", "hi", "BITS")
+
+x
+
+is.vector(x)
+
+class(x)
+
+typeof(x)
+
+length(x)
+
+attributes(x)
+nchar(x) # kind of an attribute
+dim(x)
+```
+```{r}
+# integer array
+x <-  1:10
+x
+typeof(x)
+
+x_c <- c(1,2,3,4,5,6,7,8,9,20)
+x_c
+typeof(x_c)
+
+y <- c(35:45)
+y
+typeof(y)
+
+class(x)
+typeof(x)
+length(x)
+attributes(x)
+dim(x)
+```
+
+```{r}
+# numeric array
+x <-  as.numeric(1:10)
+x
+typeof(x)
+x <- as.numeric(c(1.1, 2.3, 5.6, 12))
+typeof(x)
+
+class(x)
+typeof(x)
+length(x)
+attributes(x)
+```
+
+## Matrix operations
+```{r}
+# create matrix
+matrix(c(1, 2, 3, 4), nrow = 2, ncol=2  )
+
+#assign matrix to variable x
+x <- matrix(c(1, 2, 3, 4, 5, 6), 
+            nrow = 2, 
+            ncol = 3)
+
+x
+class(x)
+typeof(x)
+length(x)
+dim(x)
+attributes(x)
+```
+
+
+
+```{r}
+rownames(x) <- c("Pilani", "Goa")
+x
+colnames(x) <- c("Hyderabad", "Dubai", "Mumbai")
+x
+attributes(x)
+class(x)
+```
+
+### Lists
+```{r}
+x <- c(1, "BITS", FALSE, 10-9i) # Is this a list or vector?
+x
+
+x <-c(as.integer(1), "BITS", FALSE, 10-9i)
+x
+
+x <- list(1, "BITS", FALSE, 10-9i)
+x
+x[[3]]
+
+
+typeof(x[[1]])
+typeof(x[[2]])
+typeof(x[[3]])
+typeof(x[[4]])
+
+x <- list(as.integer(1), "BITS", FALSE, 10-9i) # Is this a list or vector?
+
+##What is the difference
+
+x
+class(x)
+typeof(x)
+
+typeof(x[[1]])
+typeof(x[[2]])
+typeof(x[[3]])
+typeof(x[[4]])
+
+length(x)
+attributes(x)
+
+x <- list(c(1:3), 
+          c("BITS", "Pilani", "Management"), 
+          c(FALSE,FALSE,FALSE), 
+          c(10-9i, 1+9i, 3+3i)
+          ) # llist ends
+
+x
+typeof(x[[1]])
+typeof(x[[2]])
+typeof(x[[3]])
+typeof(x[[4]])
+
+x <- list(c(1:3, "Hi"), 
+          c("BITS", "Pilani", "Management", 1234), 
+          c(FALSE,FALSE,FALSE, TRUE, 1, 2), 
+          c(10-9i, 1+9i, 3+3i)
+          ) # llist ends
+
+x
+typeof(x[[3]])
+
+length(x)
+
+length(x[[3]])
+
+dim(x)
+```
+
+
+### Create sequences & Repetitions
+- create a sequence of numbers
+- Use an n:m expression to create the simple sequence n, n+1, n+2, …, m
+- Use the `seq` function for sequences with an increment other than 1
+- Use the rep function to create a series of repeated values
+
+```{r sequences, echo=TRUE}
+101:115
+
+seq(from = 1, to = 22, by = 5)
+
+rep(8, times = 5)
+
+rep("BITS", times = 3)
+```
+
+
+### Dataframes
+```{r}
+letters[10:20]
+
+x <- data.frame(letters1 = letters[11:20], 
+                num1 = 1:10, 
+                num2 = as.numeric(11:20)
+                )
+x
+
+View(x)
+
+class(x)
+typeof(x$num2)
+length(x)
+dim(x)
+attributes(x)
+
+```
+
+```{r}
+#functions to explore dataframes
+head(x,3)
+tail(x,4)
+dim(x)
+nrow(x)
+ncol(x)
+str(x)
+names(x)
+rownames(x)
+colnames(x)
+
+
+```
+
+
+## Comparing vectors
+```{r, echo=TRUE}
+a <- 3
+a
+pi
+a == pi # Test for equality
+
+a != pi # Test for inequality
+
+a < pi
+
+a > pi
+
+a <= pi
+
+a >= pi
+
+```
+
+
+```{r, echo=TRUE}
+v <- c(3, pi, pi, 0)
+v
+length(v)
+
+w <- c(pi, pi)
+w
+length(w)
+```
+
+```{r, echo=TRUE}
+v == w # Compare two vectors with different sizes
+v
+v < 3.14
+
+v <- c(3, pi, pi, 0, 3, pi)
+w <- c(pi, pi) 
+v != w
+v < w
+v <= w
+v > w
+v >= w
+v == w
+```
+
+```{r}
+1+19
+```
+
+
+
+```{r, echo=TRUE}
+v <- c(3, pi, 4)
+v == pi # Compare a 3-element vector against one number
+
+v != pi
+
+```
+
+## Select elements in the vector
+```{r, echo=TRUE}
+fib <- c(0, 1, 1, 2, 3, 5, 8, 13, 21, 34)
+
+fib
+
+#fib[0]
+
+fib[1]
+
+fib[2]
+
+fib[3]
+
+fib[4]
+
+fib[5]
+
+```
+
+```{r, echo=TRUE}
+fib[1:3] # Select elements 1 through 3
+
+fib[4:9] # Select elements 4 through 9
+
+fib[c(1, 2, 4, 8)]
+
+fib[-1] # Ignore first element
+
+fib[1:3] # As before
+
+fib[-(1:3)] # Invert sign of index to exclude instead of select
+
+x[1:3,3]
+
+x
+```
+
+
+```{r, echo=TRUE}
+fib
+fib < 10 # This vector is TRUE wherever fib is less than 10
+
+fib[fib < 10] # Use that vector to select elements less than 10
+
+fib[fib > 10]
+
+fib %% 2 == 0 # This vector is TRUE wherever fib is even
+
+fib[fib %% 2 == 0] # Use that vector to select the even elements
+```
+
+
+## Combining vector comparisons, logical operators, and vector indexing
+
+```{r, echo=TRUE}
+v <- c(3, 6, 1, 9, 11, 16, 0, 3, 1, 45, 2, 8, 9, 6, -4)
+v
+quantile(v)
+
+quantile(v, 0.25)
+
+z <- c(-4, 0, 1, 1, 2, 3, 3, 6, 6, 8, 9, 9, 11, 16, 45)
+
+print(quantile(v, 0.1))
+print(quantile(z, 0.1))
+
+
+length(z)
+
+summary(v)
+
+boxplot(v)
+
+v > median(v)
+
+v[ v > median(v)]
+
+v[ (v < quantile(v, 0.05)) | (v > quantile(v, 0.95)) ]
+
+#Select all elements that exceed ±1 standard deviations from the mean:
+
+v[ abs(v - mean(v)) > sd(v)]
+
+#Select all elements that are neither NA nor NULL:
+
+v <- c(1, 2, 3, NA, 5, 8)
+is.na(v)
+
+na.rm =TRUE
+
+v[!is.na(v)]
+
+v[!is.na(v) & !is.null(v)]
+
+median(v)
+
+quantile(v, 0.25)
+
+desc(v)
+```
+
+## Vector Arithmetic
+```{r, echo=TRUE}
+v <- c(11, 12, 13, 14, 15)
+w <- c(1 , 2 , 3 , 4 , 5)
+v + w
+
+v - w
+
+v * w
+
+v / w
+
+w^v
+
+```
+
+
+## vector-scalar operations
+```{r, echo=TRUE}
+w
+
+w + 2
+
+w - 2
+
+w * 2
+
+w / 2
+
+2^w
+```
+
+```{r, echo=TRUE}
+w
+
+#sqrt
+sqrt(w)
+
+#log
+log(w)
+
+#sin
+sin(w)
+
+#mean
+mean(w)
+
+#distance from mean
+w - mean(w)
+
+#sd
+sd(w)
+
+#z-score
+(w - mean(w))/sd(w)
+
+
+```
+
+##  Choosing Between Two Alternatives: if-else
+
+```{r, echo=TRUE}
+#syntax 
+#if (condition) {
+  ##do this if condition is TRUE 
+#} 
+#else {
+  ## do this if condition is FALSE
+#}
+
+
+#Example
+```
+
+
+```{r, echo=TRUE}
+x <- c(4, -2, -1, 0, 1, 2)
+x
+sqrt(x)
+#purrr package
+if (x >= 0) {
+  print(sqrt(x))             # do this if x >= 0
+} else {
+  print("negative number")   # do this otherwise
+} 
+
+x <-  8
+x
+# -1 & 0 # print("between -1 and zero number")
+# 0 and 5 print("between zero & 5number")
+# else greater than 5
+
+ifelse(( x > -1 && x < 0), 
+  #IF TRUE
+       print("between -1 and zero number"),
+  #IF first condition is FALSE
+  ifelse((x > 0 & x < 5 ),
+         #IF TRUE
+         print("between zero and 5"),
+         print(" greater than 5"))
+         )
+  
+x <- 5
+
+# if(condition 1) {
+ #expressions of condition 1 is true
+#} else if (condition){
+  #expressions of condition 1 is false & condition 2 is true
+#} else {
+  #expressions of condition 1 is false and condition 2 is false
+#}
+  
+x <-  3
+x
+
+if( x > -1 && x < 0) { 
+  #IF TRUE
+       print("between -1 and zero number") 
+  } else if(x > 0 && x < 5)
+  #IF first condition is FALSE
+   {
+         #IF TRUE
+         print("between zero and 5")
+} else {
+         print("greater than 5")
+}
+      
+
+
+```
+
+```{r, echo=TRUE}
+x <- c(-2, -1, 0, 1, 2)
+
+if (all(x < 0)) {
+  print("all are negative")
+}
+
+if (any(x < 0)) {
+  print("some are negative")
+}
+```
+
+
+##  Iterating with a Loop
+```{r, echo=TRUE}
+#Syntax
+for (x in v) {
+  # do something with x
+}
+
+y <- c(-2, -1, 0, 1, 2)
+y
+
+print(y)
+
+for(x in y) {
+  print(x) 
+  print(x^2)
+}
+
+x <-  NA
+
+x
+
+x<- c(-2, -1, 0, 1, 2)
+x
+length(x)
+
+for(x in 1:5) {
+  print("length: ") 
+  print(length(x))
+  print(x) 
+  print(x^2)
+}
+
+print(y)
+
+x <- c(-2, 2, 0, 1, 5)
+x
+y <- 1:5
+y
+
+x_len <- length(x)
+y_len <- length(y)
+
+for (i in 1:x_len) {
+  #print(i)
+  #print(x[[i]])
+  #print(y[[i]])
+  if(x[[i]] == y[[i]]) {
+    print(x[[i]])
+    print(x[[i]]^2)
+  }
+}
+
+for (i in 1:5) {
+  v[[i]] <- v[[i]] ^ 2
+}
+print(v)
+
+print(x)
+print(y)
+
+```
+
+
+## functions
+```{r, echo=TRUE}
+#syntax
+name <- function(param1, ..., paramN) {
+          expr1
+          .
+          .
+          .
+          exprM
+}
+
+#function for coefficient of variation
+x <-  1:15
+
+cv <- function(x) {
+  sd(x) / mean(x)
+}
+
+class(cv)
+
+cv(x)
+cv(1:10)     # Set x = 1:10 and evaluate sd(x)/mean(x)
+```
+
+## Three parts of R functions :
+* the body(), the code inside the function.
+* the formals(), the list of arguments which controls how you can call the function.
+* the environment(), the “map” of the location of the function’s variables.
+
+```{r}
+body(cv)
+formals(cv)
+environment(cv)
+```
+
+
+```{r}
+wt_mean <- function(x, w) {
+  sum(x * w) / sum(w)
+}
+
+wt_var <- function(x, w) {
+  mu <- wt_mean(x, w)
+  sum(w * (x - mu) ^ 2) / sum(w)
+}
+wt_sd <- function(x, w) {
+  sqrt(wt_var(x, w))
+}
+
+#example
+wt_mean(1:6, 1:3)
+
+#same size of x and w
+wt_mean <- function(x, w) {
+  if (length(x) != length(w)) {
+    stop("`x` and `w` must be the same length", call. = TRUE)
+  }
+  sum(w * x) / sum(w)
+}
+
+```
+
+```{r}
+celsius_to_kelvin <- function(temp_C) {
+  temp_K <- temp_C + 273.15
+  return(temp_K)
+}
+
+# freezing point of water in Kelvin
+celsius_to_kelvin(0)
+```
+
+
+```{r}
+fahrenheit_to_kelvin <- function(temp_F) {
+  #temp_C <- fahrenheit_to_celsius(temp_F)
+  temp_K <- celsius_to_kelvin(temp_F)
+  return(temp_K)
+}
+
+# freezing point of water in Kelvin
+fahrenheit_to_kelvin(32.0)
+```
+
+## Nesting functions
+```{r}
+celsius_to_kelvin(
+  fahrenheit_to_kelvin(32.0)
+  )
+```
+
+C:/Users/user/Google Drive/RWorkshop/Session-I Data Types.Rmd
+
+### Reference:
+* https://swcarpentry.github.io/r-novice-inflammation/13-supp-data-structures/

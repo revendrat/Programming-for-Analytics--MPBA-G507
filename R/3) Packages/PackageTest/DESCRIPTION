@@ -1,0 +1,20 @@
+Package: PackageTest
+Title: Demo Package Creation
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Indika",
+           family = "Debnath",
+           role = c("aut", "cre"),
+           email = "indika.debnath@bits-pilani.ac.in",
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: This package helps the beginners learn how to create a package.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Imports: 
+    forcats

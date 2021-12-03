@@ -1,0 +1,250 @@
+---
+title: "Introduction & Basics of Strings"
+author: "PfA Teaching Team"
+date: "9/30/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction & Basics of Strings
+
+## Attach tidyverse meta-package
+```{r}
+library(tidyverse)
+```
+
+```{r}
+s1 <- "Welcome to BITS Pilani!"
+nchar(s1)
+s2 <- 'Insert "double quote" between two single quotes'
+s3 <- "Insert \"double quote\" between two single quotes"
+typeof(s1)
+print(s1)
+print(s2)
+s2
+s3
+
+s4 <- "Sagar Kapoor"
+nchar(s4)
+
+s5 <- "Sagar \"MBA\" Kapoor"
+nchar(s5)
+
+#or
+s6 <- 'Sagar "MBA" Kapoor'
+s6
+nchar(s6)
+```
+```{r}
+double1 <- "\"" 
+# or 
+double2 <- '"'
+print(double1)
+print(double2)
+```
+
+```{r}
+
+single1 <- '\'' 
+# or 
+single2 <- "'"
+
+print(single1)
+print(single2)
+```
+
+
+## What happens when you assign an incomplete string?
+* Try this on console
+```{r}
+s3 <- "Incomplete quote example
+```
+
+## Special characters
+* Handful of special characters exist
+```{r}
+print("\u100")
+
+print("\u1138")
+print("\u4144")
+print("\u9999")
+```
+```{r}
+print("\\u100")
+s1 <-  "\\u100"
+print(s1)
+print(nchar(s1))
+```
+
+
+## Combine strings using c() and str_c()
+```{r}
+# Combine multiple strings into a vector
+c("Hello", "Welcome", "to", "BITS", "Pilani")
+
+# Combine multiple strings into one string using str_c
+str_c("Hello,", "Welcome", "to", "BITS", "Pilani!")
+
+# Combine multiple strings into one string using str_c with a separator
+str_c("Hello,", "Welcome", "to", "BITS", "Pilani!", sep = ",")
+
+str_c("Hello,", "Welcome", "to", "BITS", "Pilani!", sep = " ")
+```
+## Handling NAs (or missing values): str_replace_na()
+```{r}
+greeting1 <- c("Welcome to BITS Pilani")
+name1 <- "Sagar"
+str_c("Hello ", name1, "! ", greeting1, "!")
+
+name2 <- NA
+str_c("Hello ", name2, "! ", greeting1, "!")
+
+#if you find missing value, handle the same using: str_replace_na()
+str_c("Hello ", str_replace_na(name2), "! ", greeting1, "!")
+str_c("Hello ", str_replace_na(name2, ""), "! ", greeting1, "!")
+str_c("Hello ", str_replace_na(name2, "There"), "! ", greeting1, "!")
+nchar(name2)
+length(name2)
+```
+## Vectorised operations happen within str_c()
+```{r}
+# Illustration 1
+str_c("before-", c("one", "two", "three"), "-after")
+
+names <- c("Sagar", "Sougandh", "Ajay", NA, "Indika", "Francis", "Pratik")
+str_c("Hello ", str_replace_na(names, ""), "! ", greeting1, "!")
+```
+
+```{r}
+
+# Illustration 2
+greeting <- "Welcome to "
+course <- "Programming for Analytics!"
+thursday <- FALSE
+tuesday <- TRUE
+
+
+str_c(
+  greeting, " ", course, 
+  if (thursday) " Lab Session on Thursday",
+  ".")
+
+str_c(
+  greeting, " ", course, 
+  if (tuesday) " Lab Session on Tuesday",
+  ".")
+
+friday <- TRUE
+
+str_c(
+  greeting, " ", course, 
+  if (friday) " Lecture Session on Friday",
+  ".")
+
+```
+## Check how collapse is useful
+```{r}
+clean_vec <- c("Welcome to ", "BITS Pilani", "!")
+print(length(clean_vec))
+print(class(clean_vec))
+print(paste0(clean_vec))
+```
+
+```{r}
+str_c_vec <- str_c(c("Welcome to ", "BITS Pilani", "!"))
+print(length(str_c_vec))
+print(class(str_c_vec))
+print(paste0(str_c_vec))
+```
+## use collapse
+```{r}
+c_collapse <-  str_c(c("Welcome to ", "BITS Pilani", "!"), collapse = ", ")
+print(length(c_collapse))
+print(class(c_collapse))
+print(paste0(c_collapse))
+```
+
+```{r}
+collapse <- str_c("Welcome to ", "BITS Pilani", "!", collapse = ", ")
+print(length(collapse))
+print(class(collapse))
+print(paste0(collapse))
+```
+
+## Get string length using str_length()
+```{r}
+#length of a string
+str_length("Welcome to BITS Pilani!")
+
+#length of a  multiple strings
+str_length(c( "Hello!", "Welcome to BITS Pilani!"))
+```
+
+## Sub-setting Strings
+* Extract a portion of string starting from position "m" & ending at postion "n"
+```{r}
+x <- c("BITS", "Pilani", "Rajasthan")
+str_sub(x, 1, 3)
+```
+
+* Extract last position to backward values
+```{r}
+str_sub(x, -3, -1)
+
+
+
+```
+
+## print the reverse of strings in a character
+```{r}
+str_sub(x[1], -4, -1)
+
+str_sub(x, -1, -str_length(x))
+arg1 <- c(-1, -str_length(x[1]))
+arg2 <- c(-1, -str_length(x[2]))
+arg3 <- c(-1, -str_length(x[3]))
+
+x %>% invoke_map(c(arg1,arg2,arg3), str_sub) #more needs to be done on logic
+print(x)
+print(stringi::stri_reverse(x)) #this works, but logic codes needs to be written
+```
+
+## str_sub() does not throw an error when string length is small
+```{r}
+str_sub("BITS", 1, 100)
+```
+## Convert strings to lower/upper cases
+
+```{r}
+print(x)
+print(str_sub(x, 1, 1))
+```
+
+```{r}
+# Upper to lower (First character)
+str_sub(x, 1, 1) <- str_to_lower(str_sub(x, 1, 1))
+x
+
+# Lower to Upper (Third character)
+str_sub(x, 3, 3) <- str_to_upper(str_sub(x, 3, 3))
+x
+```
+## Be aware of the local language you are operating your strings
+```{r}
+# default assumes English locale
+x <- c("apple", "eggplant", "banana")
+str_sort(x)
+```
+```{r}
+#English locale
+str_sort(x, locale = "en")  
+```
+
+```{r}
+# in Hawaiian, e comes before b
+str_sort(x, locale = "haw") # Hawaiian
+```
+

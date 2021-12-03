@@ -1,0 +1,70 @@
+---
+title: "Data Types in R (Vishava)"
+author: "Vishava"
+date: "8/24/2021"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+R.Version()
+dir()
+date()
+Sys.time()
+sessionInfo()
+```
+
+
+```{r}
+# Run this command to know the installed Version of R
+R.Version()
+
+## Run this command to know the directory in which you are operating
+dir()
+
+### Run this command to know the date in human readable format
+date()
+
+
+### Run this command to know the date in system format
+Sys.time()
+
+#### Run this command to know the packages loaded in R environment
+sessionInfo()
+```
+
+
+# Run this command to know the installed Version of R
+```{r}
+
+R.Version()
+```
+
+## Run this command to know the directory in which you are operating
+```{r}
+dir()
+```
+
+### Run this command to know the date in human readable format
+```{r}
+date()
+```
+
+### Run this command to know the date in system format
+```{r}
+Sys.time()
+```
+
+#### Run this command to know the packages loaded in R environment
+```{r}
+sessionInfo()
+```
+
+
+
+

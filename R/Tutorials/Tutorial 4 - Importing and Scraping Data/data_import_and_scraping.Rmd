@@ -1,0 +1,243 @@
+---
+title: "Data Importing and Scraping Tutorial"
+author: "Programming for Analytics"
+date: "30/09/2021"
+output: html_document
+---
+## Assignment Authors
+* Aditi Singh
+* Arsh Kumbhat
+* Jainil Shah
+* Vibha Rao
+* Revendranath T
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Importing and Scraping Data
+
+In R, it is possible to import and read files stored outside R environment.
+**NOTE**: Make sure the file is present in the same directory you are working on or you will have to specify the whole path of the file. 
+This tutorial will be dedicated to help you learn how R can import data present in various file formats like CSV, JSON, XML, MS Excel, etc. 
+
+## XML Data
+
+eXtensible Markup Language (XML) is a text-based format for representing structured information. These files can be read in R using the "XML" package. Run the following code to install the package:-  
+`install.packages('XML')`  
+
+
+### Creating XML files:-  
+
+To create XML files, any standard text editor can be used. This is what an XML file with records will look like:-
+![](./tut4_images/tut4_1.png)
+Save the file with ".xml" extension.   
+You can create an XML file with 5 such student records with ID, name and branch as attributes to get started with.    
+
+Load the following libraries    
+`library("XML")`  
+`library("methods")`  
+
+Read the XML file using the xmlParse() function. The contents of the file will be parsed and stored as a list.  
+`data <- xmlParse(file = "path_of_file/file_name.xml")`  
+Print the data to see how it is stored.  
+
+
+
+### Extracting information
+
+Various in-built functions exist to extract information of nodes associated with the file. Run the following lines of code and observe the output.
+
+1. To extract the root node:  
+`rootnode <- xmlRoot(data)`  
+
+2. To find number of nodes in the root:  
+`nodes <- xmlSize(rootnode)`  
+
+3. To get entire contents of i-th record
+`i_node <- rootnode[i]`
+
+4. To get i-th element/attribute of j-th record  
+`x <- rootnode[[i]][[j]]`  
+
+### Conversion of XML to Data Frames
+
+To enhance readability and handle large data effectively, the XML data can be converted into a Data Frame using the following command:  
+`df <- xmlToDataFrame("path_of_file/file_name.xml")`    
+Print the created Data Frame to visualize the data better.
+
+
+## MS Excel
+
+MS Excel lets you save files with the default .xls, .xlsx extension as well as a variety of other formats like .csv, .txt, etc.  
+
+
+### xlsx package 
+
+Run the following command to install required packages:  
+`install.packages("xlsx")`    // This package is specific to files with .xlsx format.
+Load the package:  
+`library("xlsx")`    
+  
+The excel files can be imported and loaded into a Data Frame using the following command:  
+`df <- read.xlsx("file_name.xlsx", sheetIndex = 1)`  (or)
+`df <- read.xlsx("file_name.xlsx", sheetName = "sheet1")`  
+**NOTE**: It is necessary to mention either sheetIndex or sheetName in the above function.
+
+### readxl package
+
+Read and load the package using the following command:    
+`install.packages("readxl")`  
+`library("readxl")`  
+
+This package can be used for both .xlsx and .xls formats.  
+
+To import excel file into a Data Frame:  
+`df<- read_excel("file_name.xlsx")`
+
+#### Importing multiple worksheets from MS Excel
+
+To check the number of worksheets present:  
+`excel_sheets("file_name.xlsx")`  
+
+The files can be imported based on its name or index. if nothing is specified, by default, the first worksheet is imported.  
+
+`df1<-read_excel("file_name.xlsx", sheet = 1)`  
+`df2<-read_excel("file_name.xlsx", sheet = "sheet2")`  
+
+You can check the content of the dataframes to visualize what is happening more clearly:  
+`head(df1)`  
+`head(df2)`  
+
+## CSV Files
+
+A comma-separated values file is a delimited text file that uses a comma to separate values. Each line of the file is a data record. Each record consists of one or more fields, separated by commas.
+
+### Reading a CSV File
+
+You can read a CSV file using the read.csv function, as in the following example:
+
+`data <- read.csv("input.csv")`
+`print(data)`
+
+The read.csv() function by default returns a data frame.
+
+### Applying dataframe functions to query the data
+
+Once you have created the data frame using read.csv(), you can query the data as follows:
+
+#### Get the max marks from a data frame
+
+`mark<-max(data$marks)`
+`print(mark)`
+
+#### Get all students in Physics department with marks greater than 50
+
+`info <- subset(data, marks > 600 & dept == "Phy")`
+`print(info)`
+
+## JSON Data
+
+A JSON file is a file that stores simple data structures and objects in JavaScript Object Notation (JSON) format, which is a standard data interchange format. It is primarily used for transmitting data between a web application and a server.
+
+### Installing rjson Package
+
+`install.packages("rjson")`
+
+### Loading the rjson package and reading the file
+
+You can read the JSON file using the fromJSON() function. It is saved as a list.
+
+`library("rjson")`
+`data <- fromJSON(file = "input.json")`
+`print(data)`
+
+### Converting to data frame
+
+You can convert this list to a data frame for further analysis using the as.data.frame() function as following:
+
+`json_data_frame <- as.data.frame(data)`
+`print(json_data_frame)`
+
+## Databases using MySQL
+
+R can connect easily to many relational databases like MySQL, Oracle, SQL server etc. and fetch records from them as a data frame. Once the data is available in the R environment, it becomes a normal R data frame and can be easily manipulated or analyzed.
+
+### Installing the necessary packages
+
+R has a built-in package named "RMySQL" which provides native connectivity with MySQL databases.
+
+`install.packages("RMySQL")`
+
+### Connecting to MySQL
+
+To connect to the MySQL database, you need to create a connection object, as in the following example, where we connect to the sample database named "Employees" and then list the tables in the database:
+
+`db = dbConnect(MySQL(), user = 'root', password = '', dbname = 'Employees', host = 'localhost')`
+`dbListTables(db)`
+
+### Querying the database
+
+Once you have  connected to MySQL, you can query the tables in the database using the dbGetQuery() function. The result is stored as a data frame.
+
+`rs = dbGetQuery(db, "select * from Employees")`
+`d = fetch(rs, n = 5)`
+`print(d)`
+
+### Some examples of queries on sample database Employees
+
+#### Display the first and last names of all employees from the table employees
+
+`dbGetQuery(db, "SELECT first_name, last_name FROM employees")`
+
+#### Find the employee number, first name, and last name of an employee, of whom you know only the first name, "Joe."
+
+`dbGetQuery(db, "SELECT emp_no, first_name, last_name FROM employees WHERE LOWER(first_name) = LOWER("Joe")`
+
+#### Find the number of Male (M) and Female (F) employees in the database and order the counts in descending order.
+
+`dbGetQuery(db, "SELECT gender, COUNT(*) AS total_count FROM employees GROUP BY gender ORDER BY total_count DESC)`
+
+#### Find the average salary by employee title, round to 2 decimal places.
+
+`dbGetQuery(db, "SELECT title, ROUND(AVG(salary), 2) as avg_salary FROM titles t JOIN salaries s ON s.emp_no = t.emp_no GROUP BY title)`
+
+#### Display the first name, last name, and salary of the highest paid employee.
+
+`dbGetQuery(db, "SELECT CONCAT(employees.first_name, ' ', employees.last_name) AS employee_name, salaries.salary FROM employees JOIN salaries ON employees.emp_no = salaries.emp_no WHERE salaries.salary = (SELECT MAX(salaries.salary) FROM salaries)`
+
+## Scraping data from web using rvest
+
+Web scraping is a technique to extract data from websites. We try to convert the unstructured data present in HTML format into usable data. The most common web scraping tools for R is rvest.  
+
+1. Let us first install the required package and import the rvest libraries:-  
+`install.packages('rvest')`  
+`library(rvest)`
+
+2. Let us now read the HTML code from any webpage:  
+`url<-"enter_the_url"`  
+`webpage<- read_html("url")`
+
+3. The selector gadget extension can be downloaded from [here](https://chrome.google.com/webstore/detail/selectorgadget/mhjhnkcfbdhnjickkkdbjoemdmbfginb?hl=en")
+
+4. Click any section of the webpage using the selector gadget to get its CSS selector as shown: 
+![](./tut4_images/tut4_2.png)  
+ 
+5. Use the CSS selectors to scrape the particular data sections  
+`heading<- html_nodes(webpage, '.h5-mktg')`     // in this case  
+Converting the heading data to text  
+`text<- html_text(heading)`  
+Try this for different CSS selectors in different webpages.
+
+6. Data Frame can be created using the different lists created.
+`df<-data.frame(list1, list2)`
+
+7. You can check out the example of data scraping from IMDb website that has been shown [here](https://www.analyticsvidhya.com/blog/2017/03/beginners-guide-on-web-scraping-in-r-using-rvest-with-hands-on-knowledge/) for better understanding. 
+
+
+
+## Resources
+
+1. https://www.tutorialspoint.com/r/r_xml_files.htm    
+2. https://www.geeksforgeeks.org  
+3. https://www.analyticsvidhya.com/blog/2017/03/beginners-guide-on-web-scraping-in-r-using-rvest-with-hands-on-knowledge/

@@ -1,0 +1,287 @@
+---
+title: "Iterations - purrr package"
+author: "Revendranath T"
+date: "8/10/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# attach tidyverse meta-packages
+```{r}
+library(tidyverse)
+```
+
+```{r}
+# defining a function which returns square
+square <- function(x){
+  return(x*x)
+}
+
+# Create a vector of number
+vector1 <- c(2,4,5,6)
+
+square(vector1)
+```
+
+```{r}
+list1 <- list(c(2,4,5,6), c(7, 8, 9))
+list1
+```
+
+```{r}
+square(list1) # throws error
+square(list1[[1]])
+square(list1[[2]])
+```
+
+```{r}
+df1 <- data.frame(c(2,4,5,6), 
+                  c(7, 8, 9, 10),
+                  c(2,4,5,6), 
+                  c(7, 8, 9, 10),
+                  c(2,4,5,6))
+
+df1
+```
+
+```{r}
+square(df1)
+```
+# Can you pass data frame to calculate mean?
+```{r}
+mean(df1)
+```
+
+
+## Calculate mean of five columns in a dataframe.
+```{r}
+## create sample dataframe
+
+df <- tibble(
+  a = rnorm(10),
+  b = rnorm(10),
+  c = rnorm(10),
+  d = rnorm(10),
+  e = rnorm(10)
+)
+df
+
+square(df)
+```
+
+# Method-1 : manual calculation of means & medians of five columns separately
+```{r}
+mean(df$a)
+median(df$a)
+mean(df$b)
+median(df$b)
+mean(df$c)
+median(df$c)
+mean(df$d)
+median(df$d)
+mean(df$e)
+mean(df$e)
+```
+```{r}
+df[[3]]
+```
+
+## Method-2: write for loop
+
+```{r}
+output_mean <- vector("double", ncol(df))  # 1. output
+for (i in seq_along(df)) {            # 2. sequence
+  output_mean[[i]] <- mean(df[[i]])      # 3. body
+}
+output_mean
+
+output_median <- vector("double", ncol(df))  # 1. output
+for (i in seq_along(df)) {            # 2. sequence
+  output_median[[i]] <- median(df[[i]])      # 3. body
+}
+output_median
+
+```
+
+
+## The map functions in purrr package
+* map() makes a list.
+* map_lgl() makes a logical vector.
+* map_int() makes an integer vector.
+* map_dbl() makes a double vector.
+* map_chr() makes a character vector.
+
+** Each function takes a vector as input, applies a function to each piece, and then returns a new vector that’s the same length (and has the same names) as the input. 
+** The type of the vector is determined by the suffix to the map function.
+
+## We can use map functions to use same calculations as loops do
+```{r}
+map_dbl(df, mean)
+#or 
+df %>% map_dbl(mean)
+
+df %>% map_dbl(median)
+```
+
+```{r}
+
+df %>% select(a,b) %>% mean() # throws an error
+
+df %>% select(a,b) %>% 
+  summarise(mean_a = mean(a),
+            mean_b = mean(b))
+
+df %>% select(a,b) %>%  map_dbl(mean)
+```
+
+```{r}
+map_dbl(df, median)
+#or
+df %>% map_dbl(median)
+
+map_dbl(df, sd)
+#or
+
+df %>% map_dbl(sd) %>% typeof()
+
+
+
+```
+```{r}
+
+z <- list(x = 1:3, y = 4:5)
+
+map_int(z, length) %>% typeof()
+```
+
+## Shotcuts
+* using split()
+* Fit a linear model to each group in a dataset. 
+* Example splits mtcars dataset into three pieces (one for each value of cylinder) and fits linear regression model to each piece:
+```{r}
+model <- lm(mpg ~ wt, data = mtcars)
+model
+summary(model)
+```
+
+```{r}
+models <- mtcars %>% 
+  split(.$cyl) %>% 
+  map(function(df) lm(mpg ~ wt, data = df))
+
+lm_function <- function(df)
+{
+  lm(mpg ~ wt, data = df)
+}
+
+models2 <- mtcars %>% 
+  split(.$cyl) %>% 
+  map(lm_function)
+ 
+ 
+models
+
+map(models, summary)
+
+map(models2, summary)
+
+models %>% 
+  map(summary) %>% 
+  map_dbl(~.$r.squared)
+```
+## Errors handling after iterations
+* safely(): returns two elements
+  * result is the original result. If there was an error, this will be NULL.
+  * error is an error object. If the operation was successful, this will be NULL.
+* safely() is designed to work with map
+```{r}
+
+
+y <- log(10)
+y
+y <- log("10")
+y
+```
+
+```{r}
+safe_log <- safely(log)
+x <- safe_log(10)
+x
+x$result
+x$error
+```
+
+```{r}
+x
+x$result
+
+log("a")
+```
+
+```{r}
+x <- safe_log("a")
+x
+```
+
+## safely() working with map
+```{r}
+x <- list(1, 10, "a")
+log("a")
+
+y <- x %>% map(safely(log)) %>% str()
+
+y[[3]]
+```
+
+
+## Mapping over multiple arguments
+*use pmap()
+```{r}
+mu <- list(5, 10, -3)
+sigma <- list(1, 5, 10)
+n <- list(10, 30, 50)
+args1 <- list(n, mu, sigma)
+
+pmap(args1, rnorm)
+
+args1 %>%
+  pmap(rnorm) %>% 
+  str()
+
+
+```
+## Pass values through tribble to pmap
+```{r}
+params <- tribble(
+  ~mean, ~sd, ~n,
+    5,     1,  1,
+   10,     5,  3,
+   -3,    10,  5
+)
+
+pmap(params, rnorm)
+#or
+params %>% 
+  pmap(rnorm)
+```
+## Invoking different functions
+```{r}
+f <- c("runif", "rnorm", "rpois")
+
+param <- list(
+  list(min = -1, max = 1), 
+  list(sd = 5), 
+  list(lambda = 10)
+)
+
+invoke_map(f, param, n=5)
+
+invoke_map(f, param, n = 5) %>% glimpse()
+```
+
+
+## Reference
+* https://r4ds.had.co.nz/iteration.html

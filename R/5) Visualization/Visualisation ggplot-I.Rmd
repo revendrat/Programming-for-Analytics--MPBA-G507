@@ -1,0 +1,689 @@
+---
+title: "Visualisation (ggplot)"
+author: "Revendranath T"
+date: "27/9/2021"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Standard plots
+
+```{r cars, echo = TRUE}
+summary(cars)
+plot(cars)
+```
+
+## Prerequisites
+```{r}
+library(tidyverse)
+#install.packages("tidyverse")
+#library(tidyverse)
+```
+
+## About mpg dataset
+* https://archive.ics.uci.edu/ml/datasets/Auto%2BMPG
+* https://www.kaggle.com/uciml/autompg-dataset
+
+```{r}
+# Look at this dataframe
+mpg %>% glimpse()
+str(mpg)
+```
+
+```{r}
+fct_unique(as_factor(mpg$class))
+
+fct_unique(as_factor(mpg$drv))
+```
+
+### First plot using ggplot
+```{r}
+#What does this do? What do you think of the code?
+mpg %>% ggplot()  #--> ggplot2
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy))
+
+p1 <- ggplot(data = mpg) 
+
+p1
+
+p2 <-  geom_point(mapping = aes(x = displ, y = hwy))
+p2
+
+p1
+p2
+
+p1 + p2
+```
+
+## Standard graph template
+```{r}
+
+ggplot(data = <DATA>) + 
+  <GEOM_FUNCTION>(mapping = aes(<MAPPINGS>))
+```
+
+### Aesthetics mapping
+* color & size
+```{r}
+#class
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, colour = class))
+```
+
+```{r}
+#size
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, size = class))
+```
+
+```{r}
+# alpha
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, alpha = class))
+```
+
+```{r}
+# shape
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, shape = class))
+```
+
+```{r}
+#all plots in blue color
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy), color = "blue")
+```
+
+
+```{r}
+#change to red
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, shape = class), color = "red")
+```
+
+
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, 
+                           y = hwy, 
+                           alpha = class, 
+                           color = class))
+```
+
+```{r}
+
+mpg %>% summary()
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, 
+                           y = hwy, 
+                           shape = as_factor(cyl), 
+                           color = as_factor(cyl)))
+
+```
+
+
+## Facets
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_wrap(~ class, nrow = 2)
+```
+
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_wrap(~ as_factor(cyl), nrow = 2)
+```
+```{r}
+mpg %>% glimpse()
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = cty)) + 
+  facet_wrap(~ as_factor(cyl), nrow = 2)
+```
+
+
+```{r}
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_wrap(~ class, nrow = 3)
+```
+
+### Geometric objects
+```{r}
+# points
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy))
+```
+```{r}
+ggplot(data = mpg) + 
+ geom_smooth(mapping = aes(x = displ, y = hwy))
+```
+
+```{r}
+#smoothing
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy))  # scatter plot using geom_point function
++  geom_smooth(mapping = aes(x = displ, y = hwy))
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  geom_smooth(mapping = aes(x = displ, y = hwy))
+
+#loess
+```
+
+```{r}
+mpg %>% glimpse()
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, color = drv))
+
+#smoothing 
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, 
+                           y = hwy, 
+                           shape = as_factor(cyl), 
+                           color = as_factor(cyl))) +
+  geom_smooth(mapping = aes(x = displ, y = hwy, linetype = drv))
+
++
+  facet_wrap(~, nrow = 4 )
+#separates the cars into three lines based on their drv value, which describes a car’s drivetrain. One line describes all of the points with a 4 value, one line describes all of the points with an f value, and one line describes all of the points with an r value. Here, 4 stands for four-wheel drive, f for front-wheel drive, and r for rear-wheel drive.
+```
+
+#Check the differences in these smoothing
+```{r}
+ggplot(data = mpg) +
+  geom_smooth(mapping = aes(x = displ, y = hwy))
+              
+ggplot(data = mpg) +
+  geom_smooth(mapping = aes(x = displ, y = hwy, group = drv))
+    
+ggplot(data = mpg) +
+  geom_smooth(
+    mapping = aes(x = displ, y = hwy, color = drv),
+    show.legend = FALSE
+  )
+
+ggplot(data = mpg) +
+  geom_smooth(
+    mapping = aes(x = displ, y = hwy, color = drv)
+  )
+```
+
+```{r}
+#multiple geoms on same plot
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, shape = drv, color = drv)) +
+  geom_smooth(mapping = aes(x = displ, y = hwy, color = drv))
+```
+
+```{r}
+#same as above?
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy, shape = drv, color = drv)) + 
+  geom_point() + 
+  geom_smooth()
+```
+
+
+```{r}
+#How is this different?
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_point(mapping = aes(color = class)) + 
+  geom_smooth()
+```
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_point(mapping = aes(color = class),
+    show.legend = FALSE) + 
+  geom_smooth(mapping = aes(color = drv),
+    show.legend = FALSE)
+
+#Think how you can visualise your plot
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_point(mapping = aes(color = class)) + 
+  geom_smooth(data = filter(mpg, class == "subcompact"), se = FALSE)
+
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_point(mapping = aes(color = class)) + 
+  geom_smooth(data = filter(mpg, class == "suv")) #, se = FALSE)
+```
+```{r}
+diamonds %>% glimpse()
+
+fct_count(diamonds$cut)
+```
+
+#Statistical transformations
+```{r}
+#Bar chart
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut))
+```
+
+```{r}
+#Better way to do it
+ggplot(data = diamonds) + 
+  stat_count(mapping = aes(x = cut))
+```
+```{r}
+#another example
+demo <- tribble(
+  ~cut,         ~freq,
+  "Fair",       1610,
+  "Good",       4906,
+  "Very Good",  12082,
+  "Premium",    13791,
+  "Ideal",      21551
+)
+
+#frequency
+ggplot(data = demo) +
+  geom_bar(mapping = aes(x = cut, y = freq), stat = "identity")
+```
+
+```{r}
+#proportions
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, y = stat(prop), group = 1))
+```
+
+#summaries with stat_summary()
+```{r}
+ggplot(data = diamonds) + 
+  stat_summary(
+    mapping = aes(x = cut, y = depth),
+    fun.min = min,
+    fun.max = max,
+    fun = median
+    #, fun = mean
+  )
+
+```
+```{r}
+ggplot(data = diamonds) + 
+  stat_summary(
+    mapping = aes(x = cut, y = price),
+    fun.min = min,
+    fun.max = max,
+    fun = median
+  )
+```
+```{r}
+diamonds %>% glimpse()
+levels(diamonds$clarity)
+
+diamonds$clarity %>% head()
+```
+
+### Position adjustments
+```{r}
+diamonds %>% glimpse()
+#Check the difference between p1 & p2
+p1 <- ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, colour = cut))
+
+p1
+```
+
+```{r}
+
+p2 <- ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = cut))
+p2
+```
+
+```{r}
+#Can we do better?
+diamonds %>% select(clarity) %>% unique()
+
+p3 <- ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = clarity))
+p3
+```
+
+```{r}
+fct_count(diamonds$cut)
+```
+
+
+```{r}
+diamonds %>% select(clarity, cut) %>% 
+  group_by(cut, clarity) %>% 
+  summarise(count_x = n())
+
+fct_count(diamonds$clarity)
+```
+
+
+```{r}
+#position = "fill" works like stacking, but makes each set of stacked bars the same height. This makes it easier to compare proportions across groups.
+#stacked plots
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = clarity), position = "fill")
+```
+
+```{r}
+#position identity
+ggplot(data = diamonds, mapping = aes(x = cut, fill = clarity)) + 
+  geom_bar(position = "identity")
+
+# or
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = clarity), position = "identity")
+```
+
+```{r}
+
+ggplot(data = diamonds, mapping = aes(x = cut, fill = clarity)) + 
+  geom_bar(alpha = 1/5, position = "identity")
+```
+
+```{r}
+ggplot(data = diamonds, mapping = aes(x = cut, colour = clarity)) + 
+  geom_bar(fill = NA, position = "identity")
+```
+
+```{r}
+#position = "dodge" places overlapping objects directly beside one another. This makes it easier to compare individual values.
+
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = clarity), position = "dodge") 
+```
+
+### Coordinate systems
+* coord_flip() switches the x and y axes. This is useful (for example), if you want horizontal boxplots. It’s also useful for long labels: it’s hard to get them to fit without overlapping on the x-axis.
+
+```{r}
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = clarity), position = "dodge") +
+  coord_flip()
+```
+
+```{r}
+data(mpg)
+```
+
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = class, y = hwy)) + 
+  geom_boxplot()
+```
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = class, y = hwy)) + 
+  geom_boxplot() +
+  coord_flip()
+
+ggplot(data = mpg) +
+  geom_boxplot(mapping = aes(x = class, y = hwy)) +
+  coord_flip()
+```
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = class, y = hwy)) + 
+  geom_boxplot() +
+  coord_flip()
+```
+
+* coord_quickmap() sets the aspect ratio correctly for maps. This is very important if you’re plotting spatial data with ggplot2 (which unfortunately we don’t have the space to cover in this book).
+
+```{r}
+library(maps)
+nz <- map_data("nz")
+nz %>%  glimpse()
+```
+
+```{r}
+ggplot(nz, aes(x=long, y=lat, group = group)) +
+  geom_polygon(fill = "white", colour = "black")
+```
+
+```{r}
+ggplot(nz, aes(x=long, y=lat, group = group)) +
+  geom_polygon(fill = "white", colour = "black") +
+  coord_quickmap()
+```
+
+
+* coord_polar() uses polar coordinates. Polar coordinates reveal an interesting connection between a bar chart and a Coxcomb chart.
+```{r}
+bar <- ggplot(data = diamonds) + 
+  geom_bar(
+    mapping = aes(x = cut, fill = cut), 
+    show.legend = FALSE,
+    width = 1
+  ) + 
+  theme(aspect.ratio = 1) +
+  labs(x = NULL, y = NULL)
+
+bar
+bar + coord_flip()
+bar + coord_polar()
+```
+
+## Layers of grammer of graphics
+```{r}
+ggplot(data = <DATA>) + 
+  <GEOM_FUNCTION1>(
+     mapping = aes(<MAPPINGS>),
+     stat = <STAT>, 
+     position = <POSITION>
+  ) +
+    <GEOM_FUNCTION2>(
+     mapping = aes(<MAPPINGS>),
+     stat = <STAT>, 
+     position = <POSITION>
+  ) +
+  <COORDINATE_FUNCTION> +
+  <FACET_FUNCTION>
+```
+
+## Esquisse
+```{r}
+library(esquisse)
+```
+
+```{r}
+getwd()
+```
+
+
+```{r}
+#ggplot already loaded
+#library(ggplot2)
+library(maptools)
+library(rgeos)
+library(ggmap)
+
+library(scales)
+library(RColorBrewer)
+set.seed(8000)
+
+# A shapefile requires the .shp as well as the .shx and .dbf files.
+# Download all of them
+#shp <- readShapeSpatial('C:/Users/user/Google Drive/RWorkshop/India_State_Boundary.shp')
+
+shp <- readShapeSpatial('G:/My Drive/Courses/Programming for Analytics (MPBA G507)/For Students/Course materials/Visualization/India_State_Boundary.shp')
+
+shp <- readShapeSpatial('G:/My Drive/Courses/Programming for Analytics (MPBA G507)/For Students/Course materials/6) Visualization')
+
+class(shp)
+shp %>% glimpse()
+plot(shp)
+names(shp)
+print(shp$State_Name)
+```
+
+```{r}
+#library(datapasta)
+
+ind_unemp <- data.frame(
+  stringsAsFactors = FALSE,
+       check.names = FALSE,
+  States = c("Andaman & Nicobar", 
+             "Andhra Pradesh",
+             "Arunachal Pradesh",
+             "Assam",
+             "Bihar",
+             "Chandigarh",
+             "Chhattishgarh",
+             "Daman and Diu and Dadra and Nagar Haveli",
+             "Delhi",
+             "Goa",
+             "Gujarat",
+             "Haryana",
+             "Himachal Pradesh",
+             "Jammu and Kashmir",
+             "Jharkhand",
+             "Karnataka",
+             "Kerala",
+             "Ladakh",
+             "Lakshadweep",
+             "Madhya Pradesh",
+             "Maharashtra",
+             "Manipur",
+             "Meghalaya",
+             "Mizoram",
+             "Nagaland",
+             "Odisha",
+             "Puducherry",
+             "Punjab",
+             "Rajasthan",
+             "Sikkim",
+             "Tamilnadu",
+             "Telengana",
+             "Tripura",
+             "Uttar Pradesh",
+             "Uttarakhand",
+             "West Bengal"
+             ),
+          Unemployment = c(8.7, 
+                           1.9,
+                           13,
+                           3.2,
+                           10.7,
+                           21.4,
+                           1.8,
+                           28.1,
+                           15,
+                           15.4,
+                           9.4,
+                           2,
+                           7.5, 
+                           15.4,
+                           2.2,
+                           4.3,
+                           0.4,
+                           1.1,
+                           9.6,
+                           6.8,
+                           21,
+                           0,
+                           4.8,
+                           4,
+                           13.2,
+                           5,
+                           3.1,
+                           7.4,
+                           9.6,
+                           6.8,
+                           21,
+                           0,
+                           4.8,
+                           4,
+                           13.2,
+                           5)
+)
+
+
+class(shp)
+shp.f <- fortify(shp, region = "State_Name")
+class(shp.f)
+
+shp.f %>% glimpse()
+
+shp.f %>% select(id) %>%  unique()
+
+ind_unemp %>% glimpse()
+
+summary(ind_unemp)
+
+typeof(ind_unemp)
+
+merge.shp.coef <- shp.f %>%  full_join(ind_unemp, by =c("id" = "States"))
+
+merge.shp.coef %>% glimpse()
+
+#merge.shp.coef$order
+final.plot <- merge.shp.coef[order(merge.shp.coef$order), ]
+
+final.plot %>% glimpse()
+```
+
+```{r}
+
+# NZ
+# ggplot(nz, aes(long, lat, group = group)) +
+#   geom_polygon(fill = "white", colour = "black") +
+#   coord_quickmap()
+                   
+#India
+ggplot(data = final.plot) + 
+  geom_polygon(aes(x = long, 
+                   y = lat, 
+                   group = group, 
+                   fill = Unemployment), 
+               color = "black", 
+               size = 0.25) + coord_map()
+
+#ggsave("India_IMR_2013_BLUE.png",dpi = 300, width = 20, height = 20, units = "cm")
+
+ggplot() +
+  geom_polygon(data = final.plot,
+               aes(x = long, y = lat, group = group, fill = count), 
+               color = "black", size = 0.25) + 
+  coord_map()+
+  scale_fill_distiller(name="IMR", palette = "YlGn")+
+  labs(title="IMR of Different States of India 2013")+
+  xlab('Longitude')+
+  ylab('Latitude')
+ggsave("India_IMR_2013_YlGn.png",dpi = 300, width = 20, height = 20, units = "cm")
+
+ggplot() +
+  geom_polygon(data = final.plot,
+               aes(x = long, y = lat, group = group, fill = count), 
+               color = "black", size = 0.25) + 
+  coord_map()+
+  scale_fill_gradient(name="IMR", limits=c(0,100), low = 'white', high = 'red')+
+  labs(title="IMR of Different States of India 2013")+
+  xlab('Longitude')+
+  ylab('Latitude')
+ggsave("India_IMR_2013_NO_ST_NAME.png",dpi = 300, width = 20, height = 20, units = "cm")
+
+cnames <- aggregate(cbind(long, lat) ~ id, data=final.plot, FUN=function(x) mean(range(x)))
+
+ggplot() +
+  geom_polygon(data = final.plot,
+               aes(x = long, y = lat, group = group, fill = count), 
+               color = "black", size = 0.25) + 
+  coord_map()+
+  scale_fill_gradient(name="IMR", limits=c(0,100), low = 'white', high = 'red')+
+  labs(title="IMR of Different States of India 2013")+
+  xlab('Longitude')+
+  ylab('Latitude')+
+  geom_text(data=cnames, aes(long, lat, label = id), size=3, fontface="bold")
+ggsave("India_IMR_2013.png",dpi = 300, width = 20, height = 20, units = "cm")
+
+```
+
+

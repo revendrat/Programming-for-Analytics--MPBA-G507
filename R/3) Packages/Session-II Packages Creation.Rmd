@@ -1,0 +1,218 @@
+---
+title: "Session - II Packages"
+author: "Revendranath T"
+date: "9/9/2021"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+## Load libraries
+library(devtools)
+library(tidyverse)
+library(fs)
+
+### check the version of library
+packageVersion("devtools")
+```
+
+
+## Packages creation
+```{r}
+#create your own package in the "mypackages" folder seaparately
+#create_package("C:/Users/user/Documents/mypackages1")
+
+#"C:/Users/user/Google Drive/Courses/Programming for Analytics (MPBA G507)/For Students/Course materials/3) Packages/test_package_creation"
+
+# "C:/Users/user/Google Drive/Courses/Programming for Analytics (MPBA G507)/For Students/Course materials/3) Packages/PackageTest"
+
+create_package("C:/Users/user/Google Drive/Courses/Programming for Analytics (MPBA G507)/For Students/Course materials/3) Packages/TestPackageCreation")
+
+#create_package("C:/Users/user/Google Drive/Courses/Programming for Analytics (MPBA G507)/For Students/Course materials/3) Packages/PackageTest")
+```
+
+* .Rbuildignore lists files that we need to have around but that should not be included when building the R package from source.
+* .Rproj.user, if you have it, is a directory used internally by RStudio.
+* .gitignore anticipates Git usage and ignores some standard, behind-the-scenes files created by R and RStudio. Even if you do not plan to use Git, this is harmless.
+* DESCRIPTION provides metadata about your package. We edit this shortly.
+* NAMESPACE declares the functions your package exports for external use and the external functions your package imports from other packages. At this point, it is empty, except for a comment declaring that this is a file we will not edit by hand.
+* The R/ directory is the “business end” of your package. It will soon contain .R files with function definitions.
+* mypackagess.Rproj is the file that makes this directory an RStudio Project. Even if you don’t use RStudio, this file is harmless. Or you can suppress its creation with create_package(..., rstudio = FALSE). 
+
+## Github Usage
+* Github usage for R will be covered after finishing the topics on Package Development in R
+* If you already have github account, run **use_git()** 
+* Commit the changes whenever you feel relevant
+
+```{r}
+#use_git() 
+```
+
+
+## Function(s) in a package
+```{r}
+# combine or catenate two factors
+(char_a <- c("male", "female", "neutral")) #gender
+typeof(char_a)
+
+(fact_a <- factor(c("male", "female", "neutral"))) #gender
+typeof(fact_a)
+fact_a
+
+print(char_a)
+print(fact_a)
+```
+
+```{r}
+(fact_b <- factor(c("Pilani", "Hyderabad", "Goa", "Dubai"))) #location
+
+typeof(fact_b)
+```
+
+```{r}
+fact_x <- c(fact_a, fact_b)
+typeof(fact_x)
+
+fc_a <-  c(fact_a, char_a)
+typeof(fc_a)
+```
+```{r}
+#coerce to characters and combine them
+factor(c(as.character(a), as.character(b)))
+
+# Create a function to coerce and combine two factors
+
+fbind <- function(a, b) {
+  factor(
+    c(as.character(a), as.character(b)))
+}
+
+```
+
+```{r}
+(char_a <- c("male", "female", "neutral")) #gender
+typeof(char_a)
+
+(char_b <-  c("Pilani", "Hyderabad", "Goa", "Dubai")) #location
+typeof(char_b)
+
+fbind_ab <-  fbind(char_a, char_b)
+
+typeof(fbind_ab)
+
+fbind_x <-  fbind(fact_a, char_b)
+typeof(fbind_x)
+fbind_x
+```
+
+```{r}
+location_a <- factor(c("Pilani", "Hyderabad"))
+location_b <-  c("Goa", "Dubai") 
+
+location_a
+typeof(location_a)
+
+location_b
+typeof(location_b)
+
+c(location_a, location_b)
+
+location <- fbind(location_a, location_b)
+location
+```
+
+
+## Steps to write a function in a package
+1. Create separate file within the package for function or functions using **use_r("function_name or file_name")**
+2. Paste the function logic in function_name.R or file_name.R
+3. Call load_all() to make function available for experimentation.
+  * load_all() simulates the process of building, installing, and attaching the  package.
+  * load_all() allows much faster iteration
+4. Commit if you are using Git
+5. use **check()** to verify if the package is functioning properly
+6. Edit DESCRIPTION file with your details
+7. Use license using **use_mit_license()** command
+8. Document using **document()** command
+  * Code > Insert roxygen skeleton
+  * Add details about the function, inputs, return values and example
+  * run the command **document()**
+9. Check the function by using **?function_name**
+10. Run **check()** again
+11. Run **install()** to install the package
+12. Use library(pacakge_name)
+13. Test the function or functions using **use_testthat()**
+  * Package developer(s) should write the test cases
+  * The helper **use_test("function_name)** opens and/or creates a test file. 
+  * Write the logic in **test-function_name.R**
+  * run **test()** to execute test cases
+  * Test cases will run every time you execute **check()**
+14. More or less done with building a packge, if the test cases are executed successfully. Few more steps are pending if you use functions from other packages, or wish to allow others on Github or within your organiation to use your package.
+15. Once committed on Github, you can use the following command to install package on your environment: **devtools::install_github("github_id/package_name")**
+
+## Using functions from other packages
+* Need to import function(s) from package(s)
+* Say we want to use fct_count() from forcats package
+* run the following: **use_package("forcats")**
+* test using fcount(iris$Species)
+
+```{r fbind}
+#Execution steps
+
+library(devtools)
+library(tidyverse)
+library(fs)
+#create_package("C:/Users/Desktop/testpackage")
+use_r("fbind")
+
+load_all()
+use_mit_license("Name")
+
+check()
+document()
+install()
+
+library(mypackages)
+
+#testing
+fbind(iris$Species[c(1, 51, 101)], 
+      PlantGrowth$group[c(1, 11, 21)])
+
+#test automation
+use_testthat()
+
+use_test("fbind")
+
+# write the test logic in test-fbind.R file
+#run test() to execute the test case
+test()
+
+#add functions from a package
+use_package("forcats")
+
+# Run the following and Edit 'R/fcount.R'
+use_r("fcount")
+
+#Call `use_test()` to create a matching test file
+
+#call document()
+document()
+
+#call install()
+install()
+
+# load library(mypackages)
+library(mypackages)
+#test using fcount(iris$Species)
+fcount(iris$Species)
+```
+
+
+
+## For later sessions
+* use_github() # if github is covered in extra session_rmd() #for summary of file on Github
+* use_readmer

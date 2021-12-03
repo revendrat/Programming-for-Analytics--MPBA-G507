@@ -1,0 +1,300 @@
+---
+title: "Untitled"
+author: "PfA Teaching Team"
+date: "9/24/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Key operations on text data through pattern matching
+
+* Determine which strings match a pattern.
+* Find the positions of matches.
+* Extract the content of matches.
+* Replace matches with new values.
+* Split a string based on a match.
+
+```{r}
+library(tidyverse)
+```
+## Detect Matches
+* To verify if a character vector matches a pattern
+* use str_detect()
+* returns a logical vector the same length as the input
+```{r}
+x <- c("BITS Pilani", "MBA BA", " Winter is coming")
+x
+#Is there "e" in vector x?
+str_detect(x, "e")
+
+#How about "i" in vector x?
+str_detect(x, "i")
+#or
+str_detect(x, regex("i"))
+
+#ignore case sensitivity
+str_detect(x, regex("i", ignore_case = TRUE))
+
+str_detect(x, regex("A", ignore_case = TRUE))
+
+```
+## How many words in "words" vector starts with s, t, h, and ends with a,e,i,o,u?
+
+```{r}
+words
+```
+
+```{r}
+# Note:  logical vector in a numeric context, FALSE becomes 0 and TRUE becomes 1
+sum(str_detect(words, regex("^s", ignore_case = TRUE)))
+#or
+sum(str_count(words, regex("^s", ignore_case = TRUE)))
+
+sum(str_detect(words, regex("^t", ignore_case = TRUE)))
+#or
+sum(str_count(words, regex("^t", ignore_case = TRUE)))
+
+sum(str_detect(words, regex("^h", ignore_case = TRUE)))
+#or
+sum(str_count(words, regex("^h", ignore_case = TRUE)))
+```
+
+```{r}
+
+#ending with h
+sum(str_count(words, regex("h$", ignore_case = TRUE)))
+
+#starting with y and ending with y: yesterday
+sum(str_count(words, regex("^y.*.y$", ignore_case = TRUE)))
+
+words[str_detect(words, regex("^y.*.y$", ignore_case = TRUE))]
+
+
+sum(str_count(words, regex("^w.*.w$", ignore_case = TRUE)))
+words[str_detect(words, regex("^w.*.w$", ignore_case = TRUE))]
+
+
+sum(str_count(words, regex("^s.*.t$", ignore_case = TRUE)))
+words[str_detect(words, regex("^a.*.y$", ignore_case = TRUE))]
+
+```
+
+
+```{r}
+# Together
+
+sum(str_detect(words, regex("^[s,t,h]", ignore_case = TRUE))) #^[s,t,h] implies first character starting with s or t or h
+#or
+sum(str_count(words, regex("^[s,t,h]", ignore_case = TRUE)))
+
+# ends with a,e,i,o,u
+sum(str_detect(words, regex("[a,e,i,o,u]$", ignore_case = TRUE)))
+#or
+sum(str_count(words, regex("^[a,e,i,o,u]$", ignore_case = TRUE)))
+# instead of sum, you may perform mean
+mean(str_detect(words, regex("[a,e,i,o,u]$", ignore_case = TRUE))) 
+#271/980
+
+test_words <- c("y", "yesterday")
+str_detect(test_words, regex("^y$", ignore_case = TRUE))
+```
+
+## find patterns starting with "qui"
+```{r}
+sum(str_count(words, regex("^qui", ignore_case = TRUE)))
+
+words[str_detect(words, regex("^qui", ignore_case = TRUE))]
+```
+```{r}
+words[str_detect(words, regex("^qui", ignore_case = TRUE))]
+```
+
+```{r}
+# excludes all the words containing with q, or u, or i, or a
+words[str_detect(words, regex("^[^quia]+", ignore_case = TRUE))]
+```
+
+```{r}
+x <- c("BITS", "Pilani", "MBA", "XPQ", "TTT") 
+str_detect(x, regex("[aeiou]", ignore_case = TRUE))
+
+x[str_detect(x, regex("[aeiou]", ignore_case = TRUE))]
+
+str_detect(x, regex("[a,e,i,o,u]", ignore_case = TRUE))
+
+str_detect(x, regex("^[^aeiou]+$", ignore_case = TRUE))
+
+str_detect(x, regex("^[^aeiou]+", ignore_case = TRUE))
+
+```
+
+
+```{r}
+# Find all words containing at least one vowel, and negate
+words[str_detect(words, "[aeiou]")]
+
+!str_detect(words, "[aeiou]")
+words[!str_detect(words, "[aeiou]")]
+
+no_vowels_1 <- !str_detect(words, "[aeiou]")
+
+# Find all words consisting only of consonants (non-vowels)
+str_detect(words, "^[^aeiou]+$")
+
+words[str_detect(words, "^[^aeiou]+$")]
+
+no_vowels_2 <- str_detect(words, "^[^aeiou]+$")
+
+#Validation of two approaches
+identical(no_vowels_1, no_vowels_2)
+
+```
+
+## Exact Matches
+* Find "to", "be", "the", and "a" in following quotes
+```{r}
+quote1 <- "Strive the not to be a success, but rather to be of value begin together"
+quote1_author <- "Albert Einstein"
+quote2 <- "Twenty years from now you will be more disappointed by the things that you didn’t do than by the ones you did do"
+quote2_author <- "Mark Twain"
+
+articles <- c("a", "the")
+prepos_verbs <- c("to", "be")
+
+articles_match <- str_c(articles, collapse = "|" )
+prepos_verbs_match <- str_c(prepos_verbs, collapse = "|")
+```
+
+```{r}
+# str_extract() gets only the first match
+quote1_has_articles <- str_extract(quote1, articles_match) 
+# or 
+quote1_has_articles <- str_extract(quote1, "a|the")
+
+a_vec = c("a", "the", "an")
+
+str_extract(quote1, "a OR the")
+
+str_extract_all(quote1, a_vec)
+
+quote1_has_prepos_verbs <- str_extract(quote1, prepos_verbs_match)
+```
+
+```{r}
+
+quote2_has_articles <- str_extract(quote2, articles_match)
+quote2_has_prepos_verbs <- str_extract(quote2, prepos_verbs_match)
+
+# str_extract_all() to get all the matches
+quote1_has_articles <- str_extract_all(quote1, articles_match)
+quote1_has_prepos_verbs <- str_extract_all(quote1, prepos_verbs_match)
+
+
+quote2_has_articles <- str_extract_all(quote2, articles_match)
+quote2_has_prepos_verbs <- str_extract_all(quote2, prepos_verbs_match)
+
+# Pass argument simplify = TRUE to return matrix with short matches
+str_extract_all(quote2, articles_match, simplify = TRUE)
+str_extract_all(quote2, prepos_verbs_match, simplify = TRUE)
+```
+
+## Grouped Matches
+* Assume that you need to identify nouns in a sentence. What's your approach?
+* Hint: Nouns come after the articles (a, the)
+```{r}
+noun <- "(a|the) ([^ ]+)"
+
+quote1_has_noun <- str_extract_all(quote1, noun)
+#or
+quote1_has_noun <- quote1 %>% str_extract_all(noun)
+
+
+quote2_has_noun <- str_extract_all(quote2, noun)
+#or
+quote2_has_noun <- quote2 %>% str_extract_all(noun)
+
+```
+## str_match(): provides individual component from the match in the form of a matrix with one column for the complete match followed by one column for each group
+```{r}
+quote1_has_noun %>% str_match(noun)
+
+quote1_has_noun %>% str_match_all(noun)
+
+quote2_has_noun %>% str_match(noun)
+
+quote2_has_noun %>% str_match_all(noun)
+
+ 
+c(quote1_has_noun, quote2_has_noun) %>% str_match(noun)
+
+c(quote1_has_noun, quote2_has_noun) %>% str_match_all(noun)
+```
+
+## Splitting
+* str_split() : splits a string up into pieces
+```{r}
+x <- c("AA", "C", "BB", "CC", "DD", "CCCCC", "CCC", "ABBCCCDDDEEEE")
+
+fruit <- c("apple", "banana", "pear", "pineapple", "frooty")
+
+x %>% str_split(" ")
+
+fruit %>% str_split(" ")
+```
+
+```{r}
+"a|b|c|d" %>% 
+  str_split("\\|") %>% 
+  .[[1]]
+```
+## set maximum number of splits
+```{r}
+x <- c("Program: MBA: ABC", "Specialisation: BA: ABC", "University: BITS: ABC", "Place: Pilani: ABC")
+x %>% str_split(": ", simplify = TRUE)
+x %>% str_split(": ", n = 2, simplify = TRUE)
+```
+## Split the sentences by words
+```{r}
+print(quote1)
+print(quote2)
+```
+
+```{r}
+quote1 %>%  str_view_all(boundary("word"))
+quote1 %>%  str_split(boundary("word"))
+```
+
+```{r}
+quote2 %>%  str_view_all(boundary("word"))
+quote2 %>%  str_split(boundary("word"))
+
+```
+## Find exact matches and their positions
+* str_locate()
+* str_locate_all()
+```{r}
+x <- "BITS Pilani Rajasthan"
+length(x)
+str_length(x)
+```
+
+```{r}
+# find the positions of "i"
+str_locate(x, "i")
+str_locate_all(x, "i")
+
+str_locate_all(x, regex("i", ignore_case = TRUE))
+```
+
+```{r}
+
+# find the positions of "a"
+str_locate(x, "a")
+str_locate_all(x, "a")
+```
+## Further readings
+* Check https://stringr.tidyverse.org/reference/index.html
+* Check stringi package

@@ -1,0 +1,870 @@
+---
+title: "Operations on Image-I"
+author: "Revendranath T"
+date: "28/9/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Image Processing and Operations in R
+* magick is a R-package that binds to ImageMagick: https://imagemagick.org/index.php
+* enables loading, editing, manipulating, and processing images
+* supports image formats:  png, jpeg, tiff and more
+* enables  manipulations such as rotate, scale, crop, trim, blur, flip, annotate and many more
+
+```{r}
+#install magick package from CRAN
+#install.packages('magick') 
+#install magick from Github ropensci library - note: requires RTools
+#devtools::install_github('ropensci/magick')
+```
+## Load library and check which functions are supported by ImageMagick
+```{r}
+library(magick)
+str(magick::magick_config())
+```
+
+```{r}
+getwd()
+```
+
+## Read a image or images from the folders/internet using image_read()
+```{r}
+bits_open <- image_read('C:/Users/user/bits_open.jpg')
+cat_saint <- image_read('C:/Users/user/cat_saint.jpg')
+mac_cat <- image_read('C:/Users/user/mac_cat.png')
+```
+
+```{r}
+bits_open %>% plot()
+cat_saint %>% plot()
+mac_cat %>% plot()
+```
+
+```{r}
+#read a jpeg image 
+bits <- image_read("https://www.bits-pilani.ac.in/uploads/Pilani/pilanimanagementadmin/Gallery/Untitled-3.jpg")
+
+bits %>% plot()
+
+#image of Maryam Mirzakhani
+maryam <- image_read('https://images.theconversation.com/files/56344/original/ht2dfgcq-1407895853.jpg')
+
+plot(maryam)
+#or
+maryam %>% plot()
+
+bits_hyd <- image_read('https://universe.bits-pilani.ac.in/Uploads/Hyderabad/adminforbitshyderabad/Gallery/2019-3-30--10-36-51-730_54799191_2409526282393364_201582859813650432_n.jpg')
+
+bits_hyd %>% plot()
+```
+
+## Basics of images
+* image_info() provides basic details
+```{r}
+print(image_info(bits))
+print(image_info(maryam))
+print(image_info(bits_open))
+print(image_info(cat_saint))
+print(image_info(mac_cat))
+print(image_info(bits_hyd))
+```
+## What does image_info provide?
+* format 
+* width
+* height
+* colorspace
+* matte: Mattes are used in photography and special effects filmmaking to combine two or more image elements into a single, final image
+* filesize:  0 because ImageMagick is lazy (in the good sense) and does not render until it has to.
+* density
+
+## Display image in R or RStudio 
+```{r}
+print(bits)
+print(maryam)
+#or
+plot(bits)
+plot(maryam)
+
+typeof(maryam)
+
+# Alternatively
+# X11 only 
+image_display(bits) #does not work as R is not run on x11
+
+# System dependent
+image_browse(maryam) # pops-up
+
+```
+## Convert image format
+```{r}
+image_info(bits)
+
+bits %>% plot()
+```
+```{r}
+bits_png <- image_convert(bits, "png")
+image_info(bits_png)
+```
+```{r}
+bits_png %>% plot()
+
+image_info(bits_png)
+
+image_info(bits_open)
+```
+
+
+
+## Write image to a folder 
+```{r}
+#getwd()
+#C:\Users\user\Documents\R\R-Tutorial
+# image_write(bits, path = 'C:/Users/user/Documents/R/R-Tutorial')
+# 
+# image_write(bits)
+
+bits %>% 
+  image_rotate(180) %>% 
+image_write('bits_180.png','png')
+
+
+```
+
+## Image Enhancements
+* Hue :Shift color of all pixels clockwise or counterclockwise about the color wheel.
+* Saturation: Increase or decrease color saturation. 
+  * Fully-saturated colors are very bright, while low saturation are grayish.
+* Brightness/Lightness: 
+  * Increase or decrease lightness. 
+  * Zero lightness results in all black pixels, while full lightness is white.
+* Use image_modulate()
+
+```{r}
+cat_saint %>% plot()
+```
+
+
+```{r}
+# Brightness, Saturation, Hue
+mod_img <- image_modulate(bits, 
+                          brightness = 120, 
+                          saturation = 20, 
+                          hue = 20)
+
+plot(mod_img)
+
+image_modulate(cat_saint, 
+               brightness = 220, 
+               saturation = 70, 
+               hue = 160) %>% 
+  plot()
+```
+## Aspect ratio: 
+* The aspect ratio of an image is the ratio of its width to its height. 
+* It is commonly expressed as two numbers separated by a colon, as in 16:9. 
+* For an x:y aspect ratio, the image is x units wide and y units high. 
+
+## Geometry
+* Values passed to image_scale() are called geometry
+* Geometry provides a convenient means to specify a geometry argument. 
+* Geometry specification use width, height, xoffset, and yoffset to specify size/dimension and position for an object and is represented in the form of:
+* “<width>x<height>{+-}<xoffset>{+-}<yoffset>” ==> "300x400+50-75"
+* x to represent the set the size. 
+* Not mandatory to give both width and height 
+  * instead just one of those is sufficient.
+* 100 implies width = 100px, 
+* image_scale(image, “100”) will resize the image proportionally to width: 100px
+* And without the first number, x300 implies height = 300px, 
+* so image_scale(image, “x300”) will resize the image proportionally to height: 300px
+* xoffset and yoffset are used with either + or - to offset the image with respect to the left or top edges.
+  * +xoffset : The left edge of the object is to be placed xoffset pixels in from the left edge of the image.
+  * -xoffset : The left edge of the object is to be placed outside the image, xoffset pixels out from the left edge of the image.
+  * +yoffset : The top edge of the object is to be yoffset pixels below the top edge of the image.
+  * -yoffset : The top edge of the object is to be yoffset pixels above the top edge of the image.
+  * like size, both xoffset and yoffset must be provided
+
+## Image Transformation
+* image editing application: cropping and scaling. 
+* magick has two functions
+  * image_crop() for cropping 
+  *  image_scale() for scaling
+  
+```{r}
+image_info(cat_saint)
+```
+
+```{r}
+cat_saint %>% plot()
+```
+```{r}
+# image_crop()
+# without off-set
+#with off-set
+image_crop(cat_saint, "250x250+0+0") %>% plot()
+```
+
+```{r}
+#with off-set
+image_crop(cat_saint, "250x250+50+0") %>% plot()
+```
+```{r}
+image_append(c(cat_saint,
+              cat_saint %>% 
+               image_crop("250x250+0+0"),
+              cat_saint %>% 
+               image_crop("250x250+50+0"),
+              cat_saint %>% 
+               image_crop("250x250+120+0")
+              )
+             ) %>% plot()
+```
+
+## image_scale()
+* image_scale() acts similarly to image_crop() but scales down/up the entire image to the given size instead of cropping a part of it.
+* image_scale and image_sample resize using simple ratio and pixel sampling algorithm.
+```{r}
+image_info(cat_saint)
+```
+
+```{r}
+
+image_scale(cat_saint, "150x150") %>% plot()
+
+image_scale(cat_saint, "150x150") %>% image_info()
+```
+
+```{r}
+cat_saint %>% 
+  image_scale("150x150") %>% 
+  image_info()
+
+image_append(c(cat_saint,
+              cat_saint %>% 
+               image_scale("150x150"),
+               cat_saint %>% 
+               image_scale("300"),
+               cat_saint %>% 
+              image_scale("x400"),
+              cat_saint %>% 
+              image_scale("x600")
+              )
+             ) %>% plot()
+
+bits %>% 
+  image_scale("400") %>% #width 400  
+  plot()
+  
+bits %>% 
+  image_scale("x400") %>% #heigth 400
+  plot()
+
+image_crop(bits, "x350") %>% plot()
+
+image_crop(bits, "+150+50") %>% plot()
+
+#what's the difference?
+
+
+```
+## More examples
+```{r}
+bits %>% 
+  image_crop("100x150+50")
+
+#rotate image
+# image_rotate rotates and increases size of canvas to fit rotated image.
+bits %>% 
+  image_rotate(90) %>% 
+  image_rotate(-90) %>% 
+  plot()
+```
+
+```{r}
+# image_flip and image_flop invert image vertically and horizontally
+# image flip
+cat_saint %>% plot()
+  
+cat_saint %>% 
+  image_flip() %>% 
+  plot()
+```
+
+```{r}
+#image flop
+image_append( c(cat_saint,
+                cat_saint %>% 
+                  image_flip(),
+                cat_saint %>% 
+                  image_flop() )
+              ) %>% 
+    plot()
+```
+
+```{r}
+
+image_append( c(bits,
+                bits %>% 
+                  image_flop() )
+              ) %>% 
+    plot()
+
+#fill image with colors
+bits %>% 
+image_fill("orange", 
+           point = "+100+300", 
+           fuzz = 30
+           ) %>% 
+  plot()
+
+```
+
+```{r}
+bits %>% plot()
+```
+
+```{r}
+bits %>% image_flop( ) %>% plot()
+```
+
+
+# Filters and effects on images
+```{r}
+#use image_blur to introduce blur to images
+bits %>% 
+  image_blur(10, 5) %>% 
+  plot()
+
+cat_saint %>% 
+  image_blur(10, 5) %>% 
+  plot()
+```
+
+```{r}
+#add some noise to images
+bits %>% 
+  image_noise() %>% 
+  plot()
+
+cat_saint %>% 
+  image_noise() %>% 
+  plot()
+```
+
+```{r}
+#would you like to do a pencil drawing?
+#charcoal filter (pencil drawing)
+bits %>% 
+  image_charcoal() %>%
+  plot()
+
+cat_saint %>% 
+  image_charcoal() %>%
+  plot()
+
+# How about an oil paint?
+bits %>% 
+  image_oilpaint() %>%
+  plot()
+# didn't come so well, does it? Try with another image
+
+maryam %>% 
+  image_oilpaint() %>%
+  plot()
+
+#negate filter
+image_append( c( bits,
+                bits %>% 
+                 image_charcoal(),
+               bits %>% 
+                 image_negate()
+               ) 
+             ) %>%
+  plot()
+
+bits %>% plot()
+
+bits %>% image_negate() %>% plot()
+
+bits %>% image_negate() %>% image_negate() %>% plot()
+
+bits %>% image_charcoal() %>% image_negate() %>% plot()
+```
+```{r}
+bits %>%  plot()
+```
+
+
+# Other basic transformations on images
+```{r}
+
+# image_trim removes edges that are the background color from the image.
+image_trim(bits)
+# 
+
+image_append( c(bits,
+                bits %>% 
+  image_border(color="red") %>% 
+  image_trim(fuzz = 10 ),
+  
+   bits %>% 
+   image_border(color="red") %>% 
+  image_trim(fuzz = 40 )
+                
+                )) %>% 
+  plot()
+
+bits %>% 
+  image_border(color="red") %>% 
+  image_trim(fuzz = 10 )
+  plot() 
+
+# image_crop cuts out a subregion of original image
+#image_info(bits) %>%
+  
+  bits %>% 
+  image_crop( "600x300+50") %>% 
+  plot()
+  
+  image_info(cat_saint)
+  
+  cat_saint %>% 
+  image_crop( "600x300") %>% 
+  plot()
+
+# image_chop removes vertical or horizontal subregion of image.
+
+image_append( c(bits, bits %>% 
+  image_chop("100x20"))) %>% 
+  plot()
+```
+
+```{r}
+
+
+# image_scale() and image_sample() resize using simple ratio and pixel sampling algorithm
+
+image_info(bits)
+
+image_append(c(bits, bits %>% 
+  image_sample("300x300"),
+  bits %>% image_scale("300x300")
+  )) %>% 
+  plot()
+
+# The most powerful resize function is image_resize which allows for setting a custom resize filter.
+# Output of image_scale is similar to image_resize(img,filter = "point").
+# For resize operations it holds that if no geometry is specified, all frames are rescaled to match the top frame.
+# image_resize resizes using custom filterType
+
+image_append(c(bits,
+bits %>% 
+  image_resize("300x300+50", filter = NULL))) %>% 
+  plot()
+
+# image_deskew auto rotate to correct skewed images
+image_append(c(bits,bits %>%  
+  image_deskew( threshold = 90))) %>% 
+  plot()
+
+image_append(c(cat_saint,cat_saint %>%  
+  image_deskew( threshold = 90))) %>% 
+  plot()
+
+image_append(c(mac_cat,mac_cat %>%  
+  image_deskew( threshold = 90))) %>% 
+  plot()
+
+image_append(c(bits, bits %>% 
+  image_page(pagesize = NULL, density = NULL),
+  bits %>% 
+  image_page(pagesize = 1, density = 72)
+  )) %>% 
+  plot()
+
+
+image_append(c(mac_cat, mac_cat %>% 
+  image_page(pagesize = NULL, density = NULL),
+  mac_cat %>% 
+  image_page(pagesize = 1, density = 72)
+  )) %>% 
+  plot()
+
+```
+```{r}
+bits %>%
+    image_crop('x420') %>%
+    image_negate() %>%
+    plot()
+
+cat_saint %>%
+    image_crop('x420') %>%
+    image_negate() %>%
+    plot()
+```
+
+##Gray scaling image
+```{r}
+# crop out width:100px and height:150px starting offset +50px from the left
+bits %>% 
+  image_quantize(colorspace = 'gray') %>% 
+  plot()
+
+#resize proportionally to width: 200px
+bits %>% 
+  image_scale(200)
+
+# flood fill with blue starting at the point at x:100, y:200
+bits %>% 
+  image_fill("blue", "100x100") %>% 
+  plot()
+
+image_info(cat_saint)
+
+ 
+  image_append( c(cat_saint, 
+                  cat_saint %>% image_fill("blue", "10x10"))) %>% 
+    plot()
+
+#adds a border of 20px left+right and 10px top+bottom
+image_append(c(bits, bits %>% 
+  image_border( "red", "20x10"))) %>% 
+  plot()
+```
+## Kernal convolution
+* Kernal: in image processing
+  * A kernel, convolution matrix, or mask is a small matrix. 
+  * It is used for blurring, sharpening, embossing, edge detection, and more. 
+  * Accomplished by doing a convolution between a kernel and an image.
+
+```{r}
+kernal <- matrix(0, ncol = 3, nrow = 3)
+kernal
+kernal[1, 2] <- 0.25
+kernal
+kernal[2, c(1, 3)] <- 0.35
+kernal
+kernal[3, 2] <- 0.45
+kernal
+```
+```{r}
+kernal1 <- matrix(0, ncol = 3, nrow = 3)
+
+kernal1[1,c(1,3)] <- 0.25 
+kernal1[3,c(1,3)] <- 1.25 
+kernal1
+```
+
+```{r}
+bits %>% 
+  plot()
+```
+
+
+## Kernal in practice
+```{r}
+kernal
+
+bits %>% 
+  image_convolve(kernal) %>%
+  plot()
+
+image_append(c(bits, 
+               bits %>% 
+                 image_convolve(kernal),
+               bits %>% 
+                 image_convolve(kernal1)
+               )
+             ) %>% plot()
+```
+
+## Negate and check the kernal effect
+```{r}
+image_append(c(bits %>% image_negate(), 
+               bits %>% 
+                 image_convolve(kernal) %>% image_negate(),
+               bits %>% 
+                 image_convolve(kernal1) %>% image_negate()
+               )
+             ) %>% plot()
+
+image_append(c(bits, 
+               bits %>% 
+                 image_convolve(kernal),
+               bits %>% 
+                 image_convolve(kernal1)
+               )
+             ) %>% plot()
+```
+# Standard Kernals
+* Blurring Kernels
+  * Unity or Identity Kernel
+  * Shaped Mean or Average Kernel
+  * Gaussian Blurring Kernel
+  * Linear 1D Gaussian (Blur)
+  * Half Gaussian (Comet)
+* Edge Detection Kernels
+  * Laplacian Of Gaussians (LoG)
+  * Difference Of Gaussians (DoG)
+  * Discrete Laplacian Kernels
+* Directional Kernels
+  * Sobel,  
+  * Roberts,  
+  * Prewitt,  
+  * Compass,  
+  * Kirsch,  
+  * FreiChen
+
+```{r}
+bits %>% 
+  image_convolve('FreiChen') %>%  # Blur Comet LoG DoG Laplacian Roberts Prewitt Compass Kirsch FreiChen
+  image_negate() %>% 
+  plot()
+
+
+image_append(c(  bits %>% 
+                 image_convolve('FreiChen'),
+               bits %>% 
+                 image_convolve('Roberts')
+               )
+             ) %>% plot()
+
+```
+
+## Text Annotation
+* Add text with images
+```{r}
+bits %>% image_annotate("Welcome to BITS Pilani!", 
+                        size = 70, 
+                        boxcolor = "pink",
+                        gravity = "southwest", 
+                        color = "red") %>% 
+  plot()
+
+bits %>% 
+  image_annotate( "CONFIDENTIAL", 
+                         size = 30, 
+                         color = "red", 
+                         #boxcolor = "pink",
+                         degrees = -45, 
+                         location = "+450+200") %>% 
+  plot()
+
+#Supported fonts: "sans", "mono", "serif", "Times", "Helvetica", "Trebuchet", "Georgia", "Palatino"or "Comic Sans"
+bits %>%
+  image_annotate("Welcome to BITS Pilani!", 
+                 font = 'Times', 
+                 size = 30) %>% 
+  plot()
+
+```
+
+```{r}
+bits %>%
+  image_rotate(270) %>%
+  image_background("blue", flatten = TRUE) %>%
+  image_border("red", "10x10") %>% 
+  image_annotate("This is BITS Pilani", color = "red", size = 70,
+                 location = "+300+200", degrees = 45) %>% 
+  plot()
+```
+## Image vectors
+* Functions in magick have been vectorized to support working with layers, compositions or animation.
+* The standard base methods [ [[, c() and length() are used to manipulate vectors of images which can then be treated as layers or frames.
+```{r}
+veri <- image_read('C:/Users/user/images/veretasium.gif')
+
+veri
+
+veri %>% plot()
+
+image_info(veri)
+
+#what did you observe in the above output?
+
+length(veri)
+
+veri %>% 
+ image_scale("200x") %>%
+  image_quantize(128)
+```
+
+## Flip the gif
+```{r}
+rev(veri) %>% 
+ # image_flip() %>% 
+  image_annotate("Reverse", size = 20, color = "white")
+
+## how to change it
+veri %>% 
+  image_rotate(180) %>% 
+  rev() %>% 
+  image_flip() %>% 
+  image_annotate("Reverse", size = 20, color = "white")
+
+```
+
+## Layers of Images
+```{r}
+img_comb <- c(image_scale(bits, "300x300"), 
+                          image_scale(cat_saint, "200x200"), 
+                          image_scale(mac_cat, "100x100+50+50"))
+
+c(bits, cat_saint, mac_cat) %>% image_info()
+
+class(img_comb)
+
+image_info(img_comb)
+
+#img_comb  <-  image_scale(img_comb, "100x100") 
+
+image_mosaic(img_comb) %>% plot()
+
+image_flatten(img_comb) %>% plot()
+
+
+```
+
+### Mosaic and Flattening has some composite operators
+* More details here: https://www.imagemagick.org/Magick++/Enumerations.html#CompositeOperator
+
+* Some examples below
+```{r}
+image_flatten(img_comb, 'Add')
+#or
+img_comb %>% 
+image_flatten( 'Add') %>% 
+  plot()
+
+img_comb %>% 
+image_flatten('Modulate') %>% 
+  plot()
+
+img_comb %>% 
+image_flatten('Minus') %>% 
+  plot()
+
+
+```
+## Image Composing
+```{r}
+ cat_saint %>% 
+  image_scale("x400") %>% 
+  image_rotate(300) %>% 
+  image_background("red") %>% 
+  image_composite(cat_saint,
+                  offset = "+180+100")
+  
+
+```
+
+
+```{r}
+## Another illustration
+bigdata <- image_read('https://jeroen.github.io/images/bigdata.jpg')
+frink <- image_read("https://jeroen.github.io/images/frink.png")
+logo <- image_read("https://jeroen.github.io/images/Rlogo.png")
+img <- c(bigdata, logo, frink)
+image_info(img)
+image_mosaic(img) 
+image_flatten(img)
+image_flatten(img, 'Add')
+image_flatten(img, 'Modulate')
+image_flatten(img, 'Minus')
+
+#Combing
+image_append(image_scale(img, "x200"))
+image_append(image_scale(img, "100"), stack = TRUE)
+
+bigdatafrink <- image_scale(image_rotate(image_background(frink, "none"), 300), "x200")
+image_composite(image_scale(bigdata, "x400"), bigdatafrink, offset = "+180+100")
+
+#Reference: https://cran.r-project.org/web/packages/magick/vignettes/intro.html
+```
+
+### Animation
+```{r}
+
+img_comb %>% 
+  image_scale("200x200") %>% 
+  image_animate(fps = 1, dispose = "previous")
+
+#BITS Logos
+
+bits1 <- image_read('C:/Users/user/images/bits_logos/BITS_Pilani-Logo.png')
+bits2 <- image_read('C:/Users/user/images/bits_logos/bits2.jpg')
+bits3 <- image_read('C:/Users/user/images/bits_logos/bits3.png')
+
+
+c(bits1, bits2, bits3) %>% 
+  image_scale("300x300") %>% 
+  image_animate(fps = 2, dispose = "previous")
+  
+```
+
+## Text Extraction from PDFs
+* While reading a PDF document, each page is converted to an element of the vector.
+* Specify the density while reading PDF, as PDF is rendered while reading.
+```{r}
+# Objective is to read this pdf document: https://www.bits-pilani.ac.in/downloads/recruitment.pdf
+
+recruitment <-  image_read_pdf('https://www.bits-pilani.ac.in/downloads/recruitment.pdf', density = 72)
+
+class(recruitment)
+
+image_info(recruitment)
+
+#display the first page
+recruitment[1]
+
+recruitment[15]
+```
+
+## Text Extraction from Images
+* Otherwise called OCR text extraction
+* Extract text from images using OCR. 
+* Use the tesseract package:
+```{r}
+#install.packages("tesseract")
+
+library(tesseract)
+
+image_text <- image_read('C:/Users/user/images/text_data/image_text.png')
+
+class(image_text)
+
+#check the image
+print(image_text)
+
+image_text %>% plot()
+
+#Extract test
+cat(image_ocr(image_text))
+#or
+image_text %>% 
+  image_ocr() %>% 
+  cat
+
+recruitment[2] %>% 
+  image_ocr() 
+```
+
+## Combine image and pdf to extract text from pdf
+```{r}
+recruitment[1] %>% 
+image_ocr() %>% cat
+
+recruitment[3] %>% 
+  image_ocr() %>% 
+  cat
+```
+
+
+## References
+* https://towardsdatascience.com/advanced-image-processing-in-r-210618ab128a
+* https://heartbeat.fritz.ai/image-manipulation-for-machine-learning-in-r-ff2b92069fef
+* https://cran.r-project.org/web/packages/imager/vignettes/gettingstarted.html
+* https://cran.r-project.org/web/packages/magick/vignettes/intro.html#Build_from_source

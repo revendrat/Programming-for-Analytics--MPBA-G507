@@ -1,0 +1,356 @@
+---
+title: "Shiny Examples"
+author: "Revendranath T"
+date: "8/19/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Free text
+
+```{r}
+library(shiny)
+
+ui <- fluidPage(
+  textInput("name", "What's your name?"),
+  passwordInput("password", "What's your password?"),
+  textAreaInput("story", "Tell me about yourself", rows = 3)
+)
+
+server <- function(input, output, session) {
+  
+}
+
+shinyApp(ui, server)
+
+```
+
+## Numeric inputs
+```{r}
+library(shiny)
+
+ui <- fluidPage(
+  numericInput("num", "Number one", value = 25, min = 0, max = 100),
+  numericInput("num1", "Number one.1", value = 50,  min = 0, max = 100),
+  sliderInput("num2", "Number two", value = 40, min = 0, max = 100),
+  sliderInput("stu_rng", "Student Range", value = c(17, 20), min = 17, max = 45),
+  sliderInput("emp_rng", "Employee Range", value = c(22, 30), min = 18, max = 65),
+  sliderInput("ret_rng", "Retirement Range", value=60, min = 60, max = 100)
+)
+
+server <- function(input, output, session) {
+  
+}
+
+shinyApp(ui, server)
+```
+
+
+## Dates as Inputs
+```{r}
+library(shiny)
+
+ui <- fluidPage(
+  dateInput("dob", "When were you born?"),
+  dateRangeInput("holiday", "When do you want to go on vacation next?")
+)
+
+server <- function(input, output, session) {
+  
+}
+
+shinyApp(ui, server)
+```
+
+## Restrict the choices
+
+```{r}
+library(shiny)
+
+animals <- c("dog", "cat", "mouse", "bird", "other", "I hate animals")
+
+ui <- fluidPage(
+  selectInput("state", "What's your favourite state?", state.name),
+  radioButtons("animal", "What's your favourite animal?", animals),
+  selectInput("state", "What's your second favourite animal?", animals)
+)
+
+server <- function(input, output, session) {
+  
+}
+
+shinyApp(ui, server)
+```
+
+## Radio buttons with smileys
+```{r}
+library(shiny)
+
+ui <- fluidPage(
+  radioButtons("rb", "Choose one:",
+    choiceNames = list(
+      icon("angry"),
+      icon("smile"),
+      icon("sad-tear")
+    ),
+    choiceValues = list("angry", "happy", "sad")
+  )
+)
+
+server <- function(input, output, session) {
+  
+}
+
+shinyApp(ui, server)
+```
+
+## Multiple dropdown Inputs for selection
+```{r}
+library(shiny)
+
+ui <- fluidPage(
+  selectInput(
+    "state", "What's your favourite state?", state.name,
+    multiple = TRUE
+  )
+)
+
+server <- function(input, output, session) {
+  
+}
+
+shinyApp(ui, server)
+```
+
+
+## Checkboxes or multiple values for radio buttons
+```{r}
+library(shiny)
+
+ui <- fluidPage(
+  checkboxGroupInput("animal", "What animals do you like?", animals),
+  checkboxGroupInput("animal1", "2nd fav animal?", animals)
+  
+)
+
+server <- function(input, output, session) {
+  
+}
+
+shinyApp(ui, server)
+```
+
+# Select one checkbox by default
+```{r}
+library(shiny)
+
+ui <- fluidPage(
+  checkboxInput("cleanup", "Clean up?", value = TRUE),
+  checkboxInput("shutdown", "Shutdown?"),
+  checkboxInput("good", "Session good?", value = TRUE),
+)
+
+server <- function(input, output, session) {
+  
+}
+
+shinyApp(ui, server)
+```
+
+## Upload files
+* use fileInput
+```{r}
+ui <- fluidPage(
+  fileInput("upload", NULL),
+  actionButton("submit", "Submit File")
+)
+
+server <- function(input, output, session) {
+  
+}
+
+shinyApp(ui, server)
+```
+
+## Action Buttons
+* actionButton() or 
+* actionLink() : Actions links and buttons are most naturally paired with observeEvent() or eventReactive() in  server function.
+
+```{r}
+library(shiny)
+
+ui <- fluidPage(
+  actionButton("click", "Click me!"),
+  actionButton("drink", "Drink me!", icon = icon("cocktail"))
+)
+
+server <- function(input, output, session) {
+  
+}
+
+shinyApp(ui, server)
+```
+
+# Customise the button
+* customise the appearance using the **class** argument by using one of "btn-primary", "btn-success", "btn-info", "btn-warning", or "btn-danger". 
+* change the size with "btn-lg", "btn-sm", "btn-xs". 
+* make buttons span the entire width of the element they are embedded within using "btn-block"
+
+```{r}
+
+
+ui <- fluidPage(
+#   fluidRow(
+#     actionButton("click", "Click me!", class = "btn-danger"),
+#     actionButton("drink", "Drink me!", class = "btn-lg btn-success")
+#   ),
+#   fluidRow(
+#     actionButton("eat", "Eat me!", class = "btn-block")
+#   )
+# )
+  fluidRow(
+  column(4,
+    actionButton("click", "Click me!", class = "btn-danger"),
+    actionButton("drink", "Drink me!", class = "btn-lg btn-success")
+  ),
+  column(8,
+    actionButton("click", "Click me!", class = "btn-danger"),
+    actionButton("drink", "Drink me!", class = "btn-lg btn-success")
+  )
+  ),
+  fluidRow(
+  column(6,
+    actionButton("eat", "Eat me!", class = "btn-danger")
+  ),
+  column(6,
+    actionButton("eat", "Eat me!", class = "btn-danger")
+  )
+  )
+)
+
+  
+server <- function(input, output, session) {
+  
+}
+
+shinyApp(ui, server)
+```
+
+
+## Outputs
+* Each output function on the front end is coupled with a render function in the back end
+* Three types
+  * text, 
+  * tables, and 
+  * plots.
+  
+## Text
+* Output regular text with textOutput() and fixed code and console output with verbatimTextOutput().
+```{r}
+library(shiny)
+
+ui <- fluidPage(
+  textOutput("text"),
+  verbatimTextOutput("code")
+  #textOutput("code")
+)
+
+server <- function(input, output, session) {
+  output$text <- renderText({ 
+    "Welcome to Shiny!" 
+  })
+  output$code <- renderPrint({ 
+    summary(1:10) 
+  })
+}
+
+shinyApp(ui, server)
+
+# print( "Welcome to Shiny!")
+# summary(1:10)
+```
+
+* Note that the {} are only required in render functions if need to run multiple lines of code. 
+* renderText() combines the result into a single string, and is usually paired with textOutput()
+* renderPrint() prints the result, and is usually paired with verbatimTextOutput()
+
+```{r}
+
+ui <- fluidPage(
+  textOutput("text"),
+  verbatimTextOutput("code")
+)
+
+server <- function(input, output, session) {
+  output$text <- renderText("Welcome to Shiny!")
+  output$code <- renderPrint(summary(1:10))
+}
+
+shinyApp(ui, server)
+```
+
+## Tables
+* tableOutput() and renderTable() render a static table of data, showing all the data at once.
+* tableOutput() is most useful for small, fixed summaries (e.g. model coefficients); * dataTableOutput() and renderDataTable() render a dynamic table, showing a fixed number of rows along with controls to change which rows are visible.
+* dataTableOutput() is most appropriate if you want to expose a complete data frame to the user
+
+```{r}
+ui <- fluidPage(
+  tableOutput("static"),
+  dataTableOutput("dynamic")
+)
+
+server <- function(input, output, session) {
+  output$static <- renderTable(head(mtcars))
+  output$dynamic <- renderDataTable(mtcars, options = list(pageLength = 11))
+}
+
+shinyApp(ui, server)
+```
+
+
+## Plots
+* Any type of R graphic (base, ggplot2, or otherwise) with plotOutput() and renderPlot()
+```{r}
+ui <- fluidPage(
+  plotOutput("plot", width = "400px")
+)
+server <- function(input, output, session) {
+  output$plot <- renderPlot(plot(1:5), res = 96)
+}
+
+shinyApp(ui, server)
+```
+
+
+## Notes:
+* The render function does two things:
+  * It sets up a special reactive context that automatically tracks what inputs the output uses.
+  * It converts the output of your R code into HTML suitable for display on a web page.
+
+##  Reactive programming
+* The big idea in Shiny: you don’t need to tell an output when to update, because Shiny automatically figures it out for you.
+```{r}
+ui <- fluidPage(
+  textInput("name", "What's your name?"),
+  textInput("fav_song", "What's your favourite song?"),
+  textOutput("greeting"),
+  textOutput("song")
+)
+
+server <- function(input, output, session) {
+  output$greeting <- renderText({
+    paste0("Hello ", input$name, "!")
+  })
+  output$song <- renderText({
+    paste0("Your favourite song is ", input$fav_song, "!")
+  })
+}
+
+shinyApp(ui, server)
+```
+
+

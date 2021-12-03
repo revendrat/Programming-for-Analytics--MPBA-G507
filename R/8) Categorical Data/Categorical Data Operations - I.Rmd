@@ -1,0 +1,389 @@
+---
+title: "Categorical Data (Operations)"
+author: "Revendranath T"
+date: "6/10/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Categorical Data Types
+1. Nominal 
+  * Unordered data such as Gender (Male, Female, Binary)
+2. Ordinal
+  * Ordered data such as ranks of students in a class. Another example, Likert scale (Strongly disagree to strongly agree)
+
+## Attach packages
+```{r}
+library(tidyverse)
+library(janitor)
+```
+
+
+## use factor in R to represent nominal data
+```{r}
+#Review the difference
+gender <- c("male", "female", "binary")
+gender
+typeof(gender)
+class(gender)
+levels(gender)
+```
+
+
+```{r}
+gender_factor <- factor(c("male", "female", "binary"))
+gender_factor
+typeof(gender_factor)
+class(gender_factor)
+levels(gender_factor)
+nlevels(gender_factor)
+min(gender_factor) # no minimum values in nominal data (not-ordered, not ordinal)
+
+gender_factor <- factor(rep(c("male", "female", "male", "binary"), 3))
+gender_factor
+summary(gender_factor)
+```
+
+#Ordered factors or ordinal data
+```{r}
+difficulty <- factor(c("easy", "medium", "hard"), ordered = TRUE)
+difficulty
+difficulty <-  fct_inorder(difficulty)
+
+difficulty
+typeof(difficulty)
+class(difficulty)
+levels(difficulty)
+nlevels(difficulty)
+min(difficulty) 
+max(difficulty)
+
+library(forcats)
+difficulty <-  fct_relevel(difficulty, c("easy", 
+                          "medium", 
+                          "hard"))
+
+difficulty
+```
+##  Get serious!
+```{r}
+library(RCurl)
+# x <- getURL("https://raw.githubusercontent.com/Defcon27/Data-Analysis-of-Indian-Automobile-dataset-using-Machine-Learning-in-R/master/indian-auto-mpg.csv"
+#             )
+# 
+# impg <- read.csv(text = x)
+
+#library(janitor)
+impg <- read.csv("https://raw.githubusercontent.com/Defcon27/Data-Analysis-of-Indian-Automobile-dataset-using-Machine-Learning-in-R/master/indian-auto-mpg.csv") %>% clean_names()
+
+impg %>% glimpse()
+
+impg %>% select(name) %>%  unique() %>% get_dupes()
+
+impg %>% select(manufacturer) %>%  unique() %>% get_dupes()
+
+impg %>% select(transmission)  %>%  unique() %>% get_dupes()
+
+impg %>% select(fuel_type)  %>%  unique() %>% get_dupes()
+
+impg %>% select(owner_type)  %>%  unique() %>% get_dupes()
+
+impg %>% select(engine_cc)  %>%  unique() %>% get_dupes()
+
+impg %>% select(power)  %>%  unique() %>% get_dupes()
+
+impg %>% select(seats)  %>%  unique() %>% get_dupes()
+
+impg %>% select(mileage_km_l)  %>%  unique() %>% get_dupes()
+```
+
+
+```{r}
+library(forcats)
+impg %>% glimpse()
+
+
+
+#convert to factors
+impg$manufacturer <- as.factor(impg$manufacturer)
+impg$fuel_type <- as.factor(impg$fuel_type)
+impg$transmission <- as.factor(impg$transmission)
+impg$owner_type <- as.factor(impg$owner_type)
+impg$location <- as.factor(impg$location)          
+
+#another method to convert to factors using map
+impg <- impg %>% 
+  mutate(manufacturer = as.factor(manufacturer), 
+         fuel_type = as.factor(fuel_type), 
+         transmission = as.factor(transmission), 
+         owner_type = as.factor(owner_type), 
+         location = as.factor(location)
+         ) 
+
+impg %>% glimpse()
+
+impg %>% 
+  select(manufacturer, fuel_type, transmission, owner_type) %>% 
+  map(levels)
+#or
+levels(impg$manufacturer)
+levels(impg$fuel_type) 
+levels(impg$transmission) 
+levels(impg$owner_type) 
+levels(impg$location) 
+
+#Count the number of values: fct_count from forecats package
+fct_count(impg$manufacturer)
+fct_count(impg$manufacturer, sort = TRUE) 
+fct_count(impg$fuel_type, sort = TRUE) 
+fct_count(impg$transmission, sort = TRUE) 
+fct_count(impg$owner_type, sort = TRUE) 
+
+# impg %>% 
+#   select(manufacturer, fuel_type, transmission, owner_type) %>% 
+#   summarise(manu_cnt = fct_count(manufacturer, sort=TRUE)) %>% 
+#   unnest_longer(col = c(manu_cnt)) # --> Throws error while unnest-ing
+
+#Remove duplicates to get unique values
+fct_unique(impg$manufacturer) 
+fct_unique(impg$fuel_type) 
+fct_unique(impg$transmission) 
+fct_unique(impg$owner_type) 
+fct_unique(impg$location) 
+
+
+# Count and unique pose challenges due to NAs
+x <- factor(c("a", "b", NA, "c"))
+x
+fct_unique(x)
+fct_count(x)
+```
+## Get the owner-type count and sort them by frequency of owner-type category
+```{r}
+fct_count(impg$owner_type, sort = TRUE) 
+```
+
+## Changing the order of levels for a factor variable
+
+### Manually reordering factor variables
+```{r}
+difficulty <- factor(c("easy", "medium", "hard"), ordered = TRUE)
+difficulty
+
+difficulty_unordered <- factor(c("medium", "easy", "very easy", "hard"), 
+                               ordered = TRUE)
+difficulty_unordered
+
+difficulty_ordered <- fct_relevel(difficulty_unordered, 
+                                  c("very easy", 
+                                    "easy", 
+                                    "medium", 
+                                    "hard")) 
+
+difficulty_ordered
+```
+## Reorder factor levels based on the appearance in data
+```{r}
+
+difficulty_unordered_1 <- rep(c("medium", "easy", "very easy", "hard"),3)
+
+difficulty_unordered_1 <- factor(difficulty_unordered_1, ordered = TRUE)
+
+difficulty_unordered_1
+
+#Reorder factor levels based on the appearance in data
+
+fct_inorder(difficulty_unordered_1)
+#factors are not ordered. Therefore, reorder
+
+difficulty_unordered_1 <- fct_relevel(difficulty_unordered_1, 
+                                  c("very easy", 
+                                    "easy", 
+                                    "medium", 
+                                    "hard")) 
+
+difficulty_unordered_1
+
+# Even then, factor levels are order based on the appearance in data
+difficulty_unordered_1 <- fct_inorder(difficulty_unordered_1)
+
+difficulty_unordered_1
+
+```
+## Order factor levels based on the frequency
+```{r}
+
+difficulty_unordered_2 <- rep(c("medium", "easy", "medium", "very easy", "hard"),3)
+difficulty_unordered_2
+difficulty_unordered_2 <- factor(difficulty_unordered_2)
+difficulty_unordered_2
+
+fct_infreq(difficulty_unordered_2)
+
+
+difficulty_unordered_3 <- factor(difficulty_unordered_2, ordered = TRUE)
+
+difficulty_unordered_3 <- fct_infreq(difficulty_unordered_3)
+
+x <- c(rep("medium",3), rep("easy",2), rep("very easy",7), rep("hard",11))
+x
+x <- factor(x)
+x
+fct_infreq(x)
+```
+
+## Reversing the order of levels using fct_rev
+```{r}
+print(levels(difficulty_unordered_3))
+
+print(levels(fct_rev(difficulty_unordered_3)))
+
+```
+
+## Reorder factor levels based on the relationship with other variables
+## use fct_reorder
+```{r}
+df <- tibble::tribble(
+  ~color,     ~a, ~b,
+  "blue",      1,  2,
+  "green",     6,  2,
+  "purple",    3,  3,
+  "red",       2,  3,
+  "yellow",    5,  1
+)
+df
+df$color <- factor(df$color)
+
+df
+
+fct_reorder(df$color, df$a, min)
+
+print(fct_reorder(df$color, df$b, min))
+#print(fct_reorder(df$color, df$b, max)) (Review & Refer to documentation of forcats)
+```
+## Add or drop factor levels in R
+The three functions which are important to know from the addition and deletion perspective are
+* fct_expand() – use it to add new level
+* fct_explicit_na() – use it, if you wish to assign NA as one of the levels. This way, when you plot charts, NA’s will also appear.
+* fct_drop() – use it drop a particular level
+```{r}
+
+# Adding factor level
+difficulty <- fct_expand(difficulty,"very very easy")
+difficulty
+
+# Converting NA to factor level
+f1 <- factor(c(1, 1, NA, NA,2, 2, NA,2, 1, 2, 2))
+f2 <- fct_explicit_na(f1, na_level = "(Unknown)")
+print(f1)
+print(f2)
+
+fct_unique(f1)
+fct_count(f1)
+
+fct_unique(f2)
+fct_count(f2)
+
+# Drop factor level --> (The documentation is limited to provide illustration)
+fac1 <- factor(c(c("aa","bb"), c("aa","bb","cc")))
+fac1
+fac2 <- fct_drop(fac1) 
+fac2
+fac1
+
+print(fac1)
+print(fac2)
+
+
+x <- c(c("aa","bb"), c("aa","bb","cc"))
+x
+length(x)
+
+
+#Reference from: https://forcats.tidyverse.org/reference/fct_drop.html
+f <- factor(c("a", "b"), levels = c("a", "b", "c"))
+f
+fct_drop(f)
+# Set only to restrict which levels to drop
+fct_drop(f, only = "a")
+
+fct_drop(f, only = "c")
+
+```
+## Changing values of factor levels in R
+* Manually combine levels into defined groups
+```{r}
+#collapse using fct_collapse()
+difficulty_easy <-  fct_expand(difficulty,c("very very easy", "very easy"))
+difficulty_easy
+
+df1 <- fct_collapse(difficulty_easy, easy = c("easy", "very easy", "very very easy"))
+df1
+```
+
+## Show levels to others or hide them
+```{r}
+difficulty <- factor(c("easy", "medium", "hard"), ordered = TRUE)
+difficulty
+# Example showing keep as argument to keep a level, and hide other levels
+fct_other(difficulty, keep = c("easy"))
+# Example showing drop as argument to hide a level, and keep other levels visible
+fct_other(difficulty, drop = c("easy"))
+
+fct_other(difficulty, keep = c("hard", "medium"))
+```
+## Shuffle and Shift the levels
+```{r}
+diff <- factor(c(rep("medium",3), 
+                 rep("easy",2), 
+                 rep("very easy",4), 
+                 rep("hard",5)))
+diff 
+
+fct_lump(diff, n = 1)
+print(diff)
+print(fct_lump(diff, n = 2))
+diff
+
+#Shuffle the levels
+print(diff)
+print(fct_shuffle(diff))
+
+#Shift the levels
+print(diff)
+print(fct_shift(diff,2))
+```
+
+## Group most/least common levels into a single level
+```{r}
+diff <- factor(c(rep("medium",3), rep("easy",2), rep("very easy",4), rep("hard",5)))
+diff 
+
+fct_lump(diff, n = 1)
+
+x <- factor(rep(LETTERS[1:9], times = c(40, 10, 5, 27, 1, 1, 1, 1, 1)))
+x %>% table()
+x %>% fct_lump_n(3) %>% table()
+x %>% fct_lump_prop(0.10) %>% table()
+x %>% fct_lump_min(5) %>% table()
+x %>% fct_lump_lowfreq() %>% table()
+
+```
+```{r}
+x <- c("a", "z", "g")
+x <- c("easy", "medium", "hard")
+as.factor(x)
+
+as_factor(x)
+
+factor(x)
+```
+
+
+## References
+* https://r4ds.had.co.nz/factors.html
+* https://www.r-bloggers.com/2020/06/working-with-factors-in-r-tutorial-forcats-package/
+* https://forcats.tidyverse.org/

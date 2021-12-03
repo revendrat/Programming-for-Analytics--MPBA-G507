@@ -1,0 +1,292 @@
+---
+title: "ShinyDashboard"
+author: "Revendranath T"
+date: "8/20/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Use shinydashboard package
+
+```{r}
+install.packages("shinydashboard")
+```
+
+## Load shinydashboard package
+```{r}
+library(shinydashboard)
+```
+
+## A dashboard has three parts: 
+  1. a header, 
+  2. a sidebar, and 
+  3. a body. 
+
+### The most minimal possible UI for a dashboard page:
+```{r}
+ui <- dashboardPage(
+  dashboardHeader(),
+  dashboardSidebar(),
+  dashboardBody()
+)
+
+server <- function(input, output) { }
+
+shinyApp(ui, server)
+```
+
+
+### Add whatever you want in the dashboard now
+```{r}
+ui <- dashboardPage(
+  dashboardHeader(title = "Basic dashboard"),
+  dashboardSidebar(),
+  dashboardBody(
+    # Boxes need to be put in a row (or column)
+    fluidRow(
+      box(
+        title = "Controls",
+        sliderInput("slider", "Number of observations:", 1, 100, 50)
+      ),
+      box(plotOutput("plot1", height = 250))
+
+      
+    )
+  )
+)
+
+server <- function(input, output) {
+  set.seed(122)
+  histdata <- rnorm(500)
+
+  output$plot1 <- renderPlot({
+    data <- histdata[seq_len(input$slider)]
+    hist(data)
+  })
+}
+
+shinyApp(ui, server)
+```
+
+## separate the dashboardSidebar and dashboardBody
+```{r}
+ui_sidebar <-   dashboardSidebar(
+    sidebarMenu(
+      menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
+      menuItem("Widgets", tabName = "widgets", icon = icon("th"))
+    )
+  )
+
+ui_body <-  dashboardBody(
+    tabItems(
+      # First tab content
+      tabItem(tabName = "dashboard",
+        fluidRow(
+          box(plotOutput("plot1", height = 250)),
+
+          box(
+            title = "Controls",
+            sliderInput("slider", "Number of observations:", 1, 100, 50)
+          )
+        )
+      ),
+
+      # Second tab content
+      tabItem(tabName = "widgets",
+        h2("Widgets tab content")
+      )
+    )
+  )
+
+ui_header <- dashboardHeader(title = "Basic+ dashboard")
+
+ui <- dashboardPage(
+  ui_header,
+  ui_sidebar,
+  ui_body
+)
+
+server <- function(input, output) {
+  set.seed(122)
+  histdata <- rnorm(500)
+
+  output$plot1 <- renderPlot({
+    data <- histdata[seq_len(input$slider)]
+    hist(data)
+  })
+}
+
+shinyApp(ui, server)
+```
+
+## Add more stuff in sidebar
+```{r}
+ui <- dashboardPage(
+  dashboardHeader(title = "Dynamic sidebar"),
+  dashboardSidebar(
+    sidebarMenu(
+      menuItemOutput("menuitem")
+    ),
+      sidebarSearchForm(textId = "searchText", buttonId = "searchButton",
+                    label = "Search...")
+  ),
+  dashboardBody()
+)
+
+server <- function(input, output) {
+  output$menuitem <- renderMenu({
+    menuItem("Menu item", icon = icon("calendar"))
+  })
+}
+
+shinyApp(ui, server)
+```
+
+## Everything together & Spice up a bit
+
+```{r}
+ui_sidebar <-   dashboardSidebar(
+    sidebarMenu(
+      menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
+      menuItem("Widgets", tabName = "widgets", icon = icon("th")),
+    sidebarSearchForm(textId = "searchText", buttonId = "searchButton",
+                    label = "Search...")
+      ) #end sidebarMenu
+  )
+
+ui_body <-  dashboardBody(
+    tabItems(
+      # First tab content
+      tabItem(tabName = "dashboard",
+        fluidRow(
+         
+          box(title = "Histogram", background = "maroon", solidHeader = TRUE,
+            plotOutput("plot1", height = 250)),
+
+          box(
+            title = "Inputs", background = "black",
+            "Box content here", br(), "More box content",
+            sliderInput("slider", "Number of observations:", 1, 100, 50),
+            textInput("text", "Text input:")
+          )
+        )
+      ),
+
+      # Second tab content
+      tabItem(tabName = "widgets",
+        h2("Widgets tab content")
+      )
+    )
+  )
+
+ui <- dashboardPage(
+  dashboardHeader(title = "Basic dashboard"),
+  ui_sidebar,
+  ui_body
+)
+
+server <- function(input, output) {
+  set.seed(122)
+  histdata <- rnorm(500)
+
+  output$plot1 <- renderPlot({
+    data <- histdata[seq_len(input$slider)]
+    hist(data)
+  })
+}
+
+shinyApp(ui, server)
+```
+
+
+## Tab Boxes
+```{r}
+body <- dashboardBody(
+  fluidRow(
+    tabBox(
+      title = "First tabBox",
+      # The id lets us use input$tabset1 on the server to find the current tab
+      id = "tabset1", height = "250px",
+      tabPanel("Tab1", "First tab content"),
+      tabPanel("Tab2", "Tab content 2")
+    ),
+    tabBox(
+      side = "right", height = "250px",
+      selected = "Tab3",
+      tabPanel("Tab1", "Tab content 1"),
+      tabPanel("Tab2", "Tab content 2"),
+      tabPanel("Tab3", "Note that when side=right, the tab order is reversed.")
+    )
+  ),
+  fluidRow(
+    tabBox(
+      # Title can include an icon
+      title = tagList(shiny::icon("gear"), "tabBox status"),
+      tabPanel("Tab1",
+        "Currently selected tab from first box:",
+        verbatimTextOutput("tabset1Selected")
+      ),
+      tabPanel("Tab2", "Tab content 2")
+    )
+  )
+)
+
+shinyApp(
+  ui = dashboardPage(
+    dashboardHeader(title = "tabBoxes"),
+    dashboardSidebar(),
+    body
+  ),
+  server = function(input, output) {
+    # The currently selected tab from the first box
+    output$tabset1Selected <- renderText({
+      input$tabset1
+    })
+  }
+)
+```
+
+## Value Boxes
+```{r}
+ui <- dashboardPage(
+  dashboardHeader(title = "Rajasthan Royals"),
+  dashboardSidebar(),
+  dashboardBody(
+    fluidRow(
+      # A static valueBox
+      valueBox(8 * 2, "Matches Played", icon = icon("credit-card")),
+
+      # Dynamic valueBoxes
+      valueBoxOutput("progressBox"),
+
+      valueBoxOutput("approvalBox")
+    ),
+    fluidRow(
+      # Clicking this will increment the progress amount
+      box(width = 4, actionButton("count", "Submit"))
+    )
+  )
+)
+
+server <- function(input, output) {
+  output$progressBox <- renderValueBox({
+    valueBox(
+      paste0(25 + input$count, "%"), "Win Percentage", icon = icon("list"),
+      color = "purple"
+    )
+  })
+
+  output$approvalBox <- renderValueBox({
+    valueBox(
+      "80%", "Play-off Chances", icon = icon("thumbs-up", lib = "glyphicon"),
+      color = "yellow"
+    )
+  })
+}
+
+shinyApp(ui, server)
+```
+

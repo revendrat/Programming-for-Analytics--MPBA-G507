@@ -1,0 +1,592 @@
+---
+title: "Page Layouts"
+author: "Revendranath T"
+date: "8/20/2021"
+output: html_document
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(shiny)
+
+ui <- fluidPage(
+  titlePanel("Central limit theorem"),
+  sidebarLayout(
+    sidebarPanel(
+      numericInput("m", "Number of samples:", 2, min = 1, max = 100)
+    ),
+    mainPanel(
+      plotOutput("hist")
+    )
+  )
+)
+
+server <- function(input, output, session) {
+  output$hist <- renderPlot({
+   means <- replicate(1e4, mean(runif(input$m)))
+    hist(means, breaks = 20)
+  }, res = 96)
+}
+
+shinyApp(ui, server)
+
+```
+
+
+## Multi-page layout
+```{r}
+ui <- fluidPage(
+  tabsetPanel(
+    tabPanel("Chennai Super Kings", 
+      fileInput("file", "Data", buttonLabel = "Upload..."),
+      textInput("delim", "Delimiter (leave blank to guess)", ""),
+      numericInput("skip", "Rows to skip", 0, min = 0),
+      numericInput("rows", "Rows to preview", 10, min = 1)
+    ), # CSK tabPanel ends here
+    tabPanel("Delhi",
+             textInput("delim", "Delimiter (leave blank to guess)", "")
+             ), # Delhi tabPanel ends here
+    tabPanel("Mumbai Indians",
+             numericInput("rows", "Rows to preview", 10, min = 1)
+             ),
+    tabPanel("Kings Punjab",
+             numericInput("rows", "Rows to preview", 10, min = 1)
+             ),
+    tabPanel("RC Bangalore",
+             numericInput("rows", "Rows to preview", 10, min = 1)
+             ),
+    tabPanel("Rajasthan Royals",
+             numericInput("rows", "Rows to preview", 10, min = 1)
+             ),
+    tabPanel("Kolkata Knight Riders",
+             numericInput("rows", "Rows to preview", 10, min = 1)
+             ),
+    tabPanel("Hyderabad Risers",
+             numericInput("rows", "Rows to preview", 10, min = 1)
+             )
+  )
+)
+
+server <- function(input, output, session) {
+  
+}
+
+shinyApp(ui, server)
+```
+
+## Multi-panels through tabs
+
+```{r}
+ui <- fluidPage(
+  sidebarLayout(
+    sidebarPanel(
+      textOutput("panel")
+    ),
+    mainPanel(
+      tabsetPanel(
+        id = "tabset",
+        tabPanel("panel 1", "one"),
+        tabPanel("panel 2", "two"),
+        tabPanel("panel 3", "three")
+      )
+    )
+  )
+)
+
+server <- function(input, output, session) {
+  output$panel <- renderText({
+    paste("Current panel: ", input$tabset)
+  })
+}
+
+shinyApp(ui, server)
+```
+
+## Navigation bars: Vertical
+```{r}
+ui <- fluidPage(
+  navlistPanel(
+    id = "tabset",
+    "Heading 1",
+    tabPanel("panel 1", "Panel one contents"),
+    "Heading 2",
+    tabPanel("panel 2", "Panel two contents"),
+    tabPanel("panel 3", "Panel three contents")
+  )
+)
+
+server <- function(input, output, session) {
+  
+}
+shinyApp(ui, server)
+```
+
+
+## Navigation bars: Horizontal
+```{r}
+ui <- navbarPage(
+  "Page title",   
+  tabPanel("panel 1", "one"),
+  tabPanel("panel 2", "two"),
+  tabPanel("panel 3", "three"),
+  navbarMenu("subpanels", 
+    tabPanel("panel 4a", "four-a"),
+    tabPanel("panel 4b", "four-b"),
+    tabPanel("panel 4c", "four-c")
+  )
+)
+
+server <- function(input, output, session) {
+  
+}
+
+shinyApp(ui, server)
+```
+
+
+```{r}
+ui <- navbarPage(
+  "IPL Teams",   
+  tabPanel("Chennai Kings", "one"),
+  tabPanel("Delhi", "two"),
+  tabPanel("Mumbai Indians", "three"),
+  tabPanel("Kolkata Riders", "four"),
+  tabPanel("RC Bangalore", "five"),
+  tabPanel("Hyderabad Risers", "six"),
+  tabPanel("Royals Rajasthan", "seven"),
+  tabPanel("Kings Punjab", "eight"),
+  navbarMenu("Year", 
+    tabPanel("2020", "Twenty Twenty"),
+    tabPanel("2019", "Twenty Nineteen"),
+    tabPanel("2018", "Twenty Eighteen")
+  )
+)
+
+server <- function(input, output, session) {
+  
+}
+
+shinyApp(ui, server)
+```
+## Themes
+* Customise background and dashboard using support packages in R-Shiny ecosystem
+* Refer to extensions of Shiny here: https://github.com/nanxstats/awesome-shiny-extensions
+
+## Themes with bslib::bs_theme()
+```{r}
+library(shiny)
+
+ui <- fluidPage(
+  theme = bslib::bs_theme(bootswatch = "darkly"),
+  sidebarLayout(
+    sidebarPanel(
+      textInput("txt", "Text input:", "text here"),
+      sliderInput("slider", "Slider input:", 1, 100, 30)
+    ),
+    mainPanel(
+      h1(paste0("Theme: darkly")),
+      h2("Header 2"),
+      p("Some text")
+    )
+  )
+)
+
+
+server <- function(input, output, session) {
+  
+}
+
+shinyApp(ui, server)
+```
+
+
+## Blend theme with your panel
+```{r}
+library(ggplot2)
+
+ui <- navbarPage(
+  theme = bslib::bs_theme(bootswatch = "darkly"),
+  "Page title",   
+  tabPanel("panel 1", sidebarLayout(
+    sidebarPanel(
+      textInput("txt", "Text input:", "text here"),
+      sliderInput("slider", "Slider input:", 1, 100, 30)
+    ),
+    mainPanel(
+      h1(paste0("Theme: darkly")),
+      h2("Header 2"),
+      p("Some text")
+    )
+  )
+           
+           ),#tabpanel
+  tabPanel("Dataset", 
+           selectInput("dataset", 
+                label = "Dataset BITS", 
+                choices = ls("package:datasets")),
+    verbatimTextOutput("summary"),
+    tableOutput("table")
+           ), #tablpanel
+  tabPanel("Plot", 
+            plotOutput("plot")
+           
+           ), #tabpanel
+  navbarMenu("subpanels", 
+    tabPanel("panel 4a", "four-a"),
+    tabPanel("panel 4b", "four-b"),
+    tabPanel("panel 4c", "four-c")
+  )
+)
+
+
+
+server <- function(input, output, session) {
+   # Create a reactive expression
+    dataset <- reactive({
+        get(input$dataset, "package:datasets")
+    })
+    
+    output$summary <- renderPrint({
+        # Use a reactive expression by calling it like a function
+        summary(dataset())
+    })
+    
+    output$table <- renderTable({
+        dataset()
+    })
+    
+     output$plot <- renderPlot({
+    ggplot(mtcars, aes(wt, mpg)) +
+      geom_point() +
+      geom_smooth()
+  }, res = 96)
+     
+}
+
+shinyApp(ui, server)
+```
+
+## Interactive Graphics
+* renderPlot()
+* renderImage()
+* Four mouse events
+  * click, 
+  * dblclick (double click), 
+  * hover (when the mouse stays in the same place for a little while), and 
+  * brush (a rectangular selection tool)
+  
+```{r}
+ui <- fluidPage(
+  plotOutput("plot", click = "plot_click"),
+  verbatimTextOutput("info")
+)
+
+server <- function(input, output) {
+  output$plot <- renderPlot({
+    plot(mtcars$wt, mtcars$mpg)
+  }, res = 96)
+
+  output$info <- renderPrint({
+    req(input$plot_click)
+    x <- round(input$plot_click$x, 2)
+    y <- round(input$plot_click$y, 2)
+    cat("[", x, ", ", y, "]", sep = "")
+  })
+}
+
+shinyApp(ui, server)
+```
+
+## Near points on a plot
+```{r}
+ui <- fluidPage(
+  plotOutput("plot", click = "plot_click"),
+  tableOutput("data")
+)
+server <- function(input, output, session) {
+  output$plot <- renderPlot({
+    plot(mtcars$wt, mtcars$mpg)
+  }, res = 96)
+  
+  output$data <- renderTable({
+    nearPoints(mtcars, input$plot_click, xvar = "wt", yvar = "mpg")
+  })
+}
+
+shinyApp(ui, server)
+```
+
+
+## Near points using ggplot and browser
+```{r}
+ui <- fluidPage(
+  plotOutput("plot", click = "plot_click"),
+  tableOutput("data")
+)
+
+server <- function(input, output, session) {
+  output$plot <- renderPlot({
+    ggplot(mtcars, aes(wt, mpg)) + geom_point()
+  }, res = 96)
+  
+  output$data <- renderTable({
+    req(input$plot_click)
+     #browser()
+    nearPoints(mtcars, input$plot_click)
+  })
+}
+
+shinyApp(ui, server)
+```
+
+## Brushes or selection on Plots
+```{r}
+ui <- fluidPage(
+  plotOutput("plot", brush = "plot_brush"),
+  tableOutput("data")
+)
+
+server <- function(input, output, session) {
+  output$plot <- renderPlot({
+    ggplot(mtcars, aes(wt, mpg)) + geom_point()
+  }, res = 96)
+  
+  output$data <- renderTable({
+    brushedPoints(mtcars, input$plot_brush)
+  })
+}
+
+shinyApp(ui, server)
+```
+
+
+```{r}
+set.seed(1014)
+df <- data.frame(x = rnorm(100), y = rnorm(100))
+
+ui <- fluidPage(
+  plotOutput("plot", click = "plot_click", )
+)
+
+server <- function(input, output, session) {
+  dist <- reactiveVal(rep(1, nrow(df)))
+  observeEvent(input$plot_click,
+    dist(nearPoints(df, input$plot_click, allRows = TRUE, addDist = TRUE)$dist_)  
+  )
+  
+  output$plot <- renderPlot({
+    df$dist <- dist()
+    ggplot(df, aes(x, y, size = dist)) + 
+      geom_point() + 
+      scale_size_area(limits = c(0, 1000), max_size = 10, guide = NULL)
+  }, res = 96)
+}
+
+shinyApp(ui, server)
+```
+
+## More interactions on graphs
+```{r}
+ui <- fluidPage(
+  plotOutput("plot", brush = "plot_brush", dblclick = "plot_reset")
+)
+server <- function(input, output, session) {
+  selected <- reactiveVal(rep(FALSE, nrow(mtcars)))
+
+  observeEvent(input$plot_brush, {
+    brushed <- brushedPoints(mtcars, input$plot_brush, allRows = TRUE)$selected_
+    selected(brushed | selected())
+  })
+  observeEvent(input$plot_reset, {
+    selected(rep(FALSE, nrow(mtcars)))
+  })
+
+  output$plot <- renderPlot({
+    mtcars$sel <- selected()
+    ggplot(mtcars, aes(wt, mpg)) + 
+      geom_point(aes(colour = sel)) +
+      scale_colour_discrete(limits = c("TRUE", "FALSE"))
+  }, res = 96)
+}
+
+shinyApp(ui, server)
+```
+
+## Interactive UI for Graphs
+```{r}
+ui <- fluidPage(
+  sliderInput("height", "height", min = 100, max = 500, value = 250),
+  sliderInput("width", "width", min = 100, max = 500, value = 250),
+  plotOutput("plot", width = 250, height = 250)
+)
+server <- function(input, output, session) {
+  output$plot <- renderPlot(
+    width = function() input$width,
+    height = function() input$height,
+    res = 96,
+    {
+      plot(rnorm(20), rnorm(20))
+    }
+  )
+}
+
+shinyApp(ui, server)
+```
+
+## Interactivity with Images
+* Below illustration is working here: https://hadley.shinyapps.io/ms-puppies/
+```{r}
+puppies <- tibble::tribble(
+  ~breed, ~ id, ~author, 
+  "corgi", "eoqnr8ikwFE","alvannee",
+  "labrador", "KCdYn0xu2fU", "shaneguymon",
+  "spaniel", "TzjMd7i5WQI", "_redo_"
+)
+
+ui <- fluidPage(
+  selectInput("id", "Pick a breed", choices = setNames(puppies$id, puppies$breed)),
+  htmlOutput("source"),
+  imageOutput("photo")
+)
+server <- function(input, output, session) {
+  # output$photo <- renderImage({
+  #   list(
+  #     src = file.path("puppy-photos", paste0(input$id, ".jpg")),
+  #     contentType = "image/jpeg",
+  #     width = 500,
+  #     height = 650
+  #   )
+  # }, deleteFile = FALSE)
+  # 
+  # output$source <- renderUI({
+  #   info <- puppies[puppies$id == input$id, , drop = FALSE]
+  #   HTML(glue::glue("<p>
+  #     <a href='https://unsplash.com/photos/{info$id}'>original</a> by
+  #     <a href='https://unsplash.com/@{info$author}'>{info$author}</a>
+  #   </p>"))
+  # })
+}
+
+shinyApp(ui, server)
+```
+
+## Download file
+```{r}
+ui <- fluidPage(
+  selectInput("dataset", "Pick a dataset", ls("package:datasets")),
+  tableOutput("preview"),
+  downloadButton("download", "Download .tsv")
+)
+
+server <- function(input, output, session) {
+  data <- reactive({
+    out <- get(input$dataset, "package:datasets")
+    if (!is.data.frame(out)) {
+      validate(paste0("'", input$dataset, "' is not a data frame"))
+    }
+    out
+  })
+  
+  output$preview <- renderTable({
+    head(data())
+  })
+    
+  output$download <- downloadHandler(
+    filename = function() {
+      paste0(input$dataset, ".tsv")
+    },
+    content = function(file) {
+      vroom::vroom_write(data(), file)
+    }
+  )
+}
+
+shinyApp(ui, server)
+```
+
+
+## More interactive upload/download operations
+* read file, clean it, and download in tsv format
+```{r}
+library(tidyverse)
+library(janitor)
+
+ui_upload <- sidebarLayout(
+  sidebarPanel(
+    fileInput("file", "Data", buttonLabel = "Upload..."),
+    textInput("delim", "Delimiter (leave blank to guess)", ""),
+    numericInput("skip", "Rows to skip", 0, min = 0),
+    numericInput("rows", "Rows to preview", 10, min = 1)
+  ),
+  mainPanel(
+    h3("Raw data"),
+    tableOutput("preview1")
+  )
+)
+
+ui_clean <- sidebarLayout(
+  sidebarPanel(
+    checkboxInput("snake", "Rename columns to snake case?"),
+    checkboxInput("constant", "Remove constant columns?"),
+    checkboxInput("empty", "Remove empty cols?")
+  ),
+  mainPanel(
+    h3("Cleaner data"),
+    tableOutput("preview2")
+  )
+)
+
+ui_download <- fluidRow(
+  column(width = 12, downloadButton("download", class = "btn-block"))
+)
+
+ui <- fluidPage(
+  ui_upload,
+  ui_clean,
+  ui_download
+)
+
+server <- function(input, output, session) {
+  # Upload ---------------------------------------------------------
+  raw <- reactive({
+    req(input$file)
+    delim <- if (input$delim == "") NULL else input$delim
+    vroom::vroom(input$file$datapath, delim = delim, skip = input$skip)
+  })
+  output$preview1 <- renderTable(head(raw(), input$rows))
+  
+  # Clean ----------------------------------------------------------
+  tidied <- reactive({
+    out <- raw()
+    if (input$snake) {
+      names(out) <- janitor::make_clean_names(names(out))
+    }
+    if (input$empty) {
+      out <- janitor::remove_empty(out, "cols")
+    }
+    if (input$constant) {
+      out <- janitor::remove_constant(out)
+    }
+    
+    out
+  })
+  output$preview2 <- renderTable(head(tidied(), input$rows))
+  
+  # Download -------------------------------------------------------
+  output$download <- downloadHandler(
+    filename = function() {
+      paste0(tools::file_path_sans_ext(input$file$name), ".tsv")
+    },
+    content = function(file) {
+      vroom::vroom_write(tidied(), file)
+    }
+  )
+}
+
+shinyApp(ui, server)
+```
+
